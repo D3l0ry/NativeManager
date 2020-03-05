@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeManager", "NativeManager.csproj", "{A6A28FD6-51D9-495C-856B-DFCE86299528}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6A28FD6-51D9-495C-856B-DFCE86299528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6A28FD6-51D9-495C-856B-DFCE86299528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6A28FD6-51D9-495C-856B-DFCE86299528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6A28FD6-51D9-495C-856B-DFCE86299528}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {95ED5886-39BD-44A6-A240-A10AF9C46698}
+	EndGlobalSection
+EndGlobal
