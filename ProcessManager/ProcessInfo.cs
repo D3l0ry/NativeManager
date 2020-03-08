@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 using NativeManager.WinApi;
 
@@ -12,7 +13,7 @@ namespace NativeManager.ProcessManager
         {
             Found(process, index);
 
-            return process?[index];
+            return process[index];
         }
 
         public static Process GetProcess(string processName, int index = 0) => GetProcess(Process.GetProcessesByName(processName));
@@ -25,28 +26,52 @@ namespace NativeManager.ProcessManager
 
         public static bool IsProcessActiveWindow(this string processName) => (GetProcess(processName)?.MainWindowHandle ?? IntPtr.Zero) == User32.GetForegroundWindow() ? true : false;
 
-        public static Dictionary<string, IntPtr> GetProcessModule(this Process process)
+        public static ProcessModule GetModule(this Process process, string module)
+        {
+            if (string.IsNullOrWhiteSpace(module))
+            {
+                throw new ArgumentException("Argument is Null or WhiteSpace");
+            }
+
+            return process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.FileName.Equals(module, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static Dictionary<string, IntPtr> GetModules(this Process process)
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
-            foreach (ProcessModule UIModule in process.Modules)
+            if(process.Modules.Count == 0)
             {
-                Modules.Add(UIModule.ModuleName, UIModule.BaseAddress);
+                throw new IndexOutOfRangeException("Modules equals zero.");
             }
+
+            process.Modules.Cast<ProcessModule>().All(mdl =>
+            {
+                Modules.Add(mdl.ModuleName, mdl.BaseAddress);
+
+                return true;
+            });
 
             return Modules;
         }
 
-        public static Dictionary<string, IntPtr> GetProcessModule(this Process[] process, int index = 0)
+        public static Dictionary<string, IntPtr> GetModules(this Process[] process, int index = 0)
         {
             Found(process, index);
 
-            return GetProcessModule(process[index]);
+            return GetModules(process[index]);
         }
 
-        public static Dictionary<string, IntPtr> GetProcessModule(this string processName, int index = 0) => GetProcessModule(Process.GetProcessesByName(processName)[index]);
+        public static Dictionary<string, IntPtr> GetModules(this string processName, int index = 0)
+        {
+            Process[] process = Process.GetProcessesByName(processName);
 
-        public static void Found(Process[] process, int index)
+            Found(process, index);
+
+            return GetModules(process[index]);
+        }
+
+        public static void Found(this Process[] process, int index)
         {
             if (process.Length != 0 && index <= (process.Length - 1))
             {
