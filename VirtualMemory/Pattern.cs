@@ -9,7 +9,7 @@ namespace NativeManager.VirtualMemory
 {
     public unsafe static class Pattern
     {
-        public static IntPtr FindPattern(HMemory hMemory, uint module, string pattern, int offset = 0)
+        public static IntPtr FindPattern(HMemory memory, uint module, string pattern, int offset = 0)
         {
             if(string.IsNullOrWhiteSpace(pattern))
             {
@@ -32,7 +32,7 @@ namespace NativeManager.VirtualMemory
                 return true;
             });
 
-            Kernel32.GetModuleInformation(hMemory.Handle, (IntPtr)module, out MODULEINFO MODULEINFO, sizeof(MODULEINFO));
+            Kernel32.GetModuleInformation(memory.Handle, (IntPtr)module, out MODULEINFO MODULEINFO, sizeof(MODULEINFO));
 
             for (long PIndex = module; PIndex < MODULEINFO.SizeOfImage; PIndex++)
             {
@@ -40,7 +40,7 @@ namespace NativeManager.VirtualMemory
 
                 for (int MIndex = 0; MIndex < Patterns.Count; MIndex++)
                 {
-                    Found = Patterns[MIndex] == 0 || hMemory.Read<byte>(PIndex + MIndex) == Patterns[MIndex];
+                    Found = Patterns[MIndex] == 0 || memory.Read<byte>(PIndex + MIndex) == Patterns[MIndex];
 
                     if (!Found)
                     {
