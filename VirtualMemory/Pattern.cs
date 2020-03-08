@@ -11,6 +11,11 @@ namespace NativeManager.VirtualMemory
     {
         public static IntPtr FindPattern(HMemory hMemory, uint module, string pattern, int offset = 0)
         {
+            if(string.IsNullOrWhiteSpace(pattern))
+            {
+                return IntPtr.Zero;
+            }
+
             List<byte> Patterns = new List<byte>();
 
             pattern.Split(' ').All((X) =>

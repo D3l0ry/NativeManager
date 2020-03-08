@@ -3,6 +3,7 @@ using NativeManager.WinApi;
 using NativeManager.WinApi.Enums;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -47,9 +48,9 @@ namespace NativeManager.VirtualMemory
 
         private bool WriteBytes(void* address, byte[] buffer) => Kernel32.WriteProcessMemory(Handle, address, buffer, buffer.Length, IntPtr.Zero);
 
-        public virtual T Read<T>(int address) => Read<T>((long)address);
+        public T Read<T>(int address) => Read<T>((long)address);
 
-        public virtual T Read<T>(uint address) => Read<T>((long)address);
+        public T Read<T>(uint address) => Read<T>((long)address);
 
         public virtual T Read<T>(long address)
         {
@@ -70,6 +71,10 @@ namespace NativeManager.VirtualMemory
 
             return WriteBytes((void*)address, buffer);
         }
+
+        public ProcessModule GetModule(string module) => ProcessMemory.GetModule(module);
+
+        public Dictionary<string, IntPtr> GetModules() => ProcessMemory.GetModules();
 
         public IntPtr Allocate(uint size) => Kernel32.VirtualAllocEx(Handle, IntPtr.Zero, size, AllocationType.Commit | AllocationType.Reserve, MemoryProtection.ExecuteReadWrite);
 
