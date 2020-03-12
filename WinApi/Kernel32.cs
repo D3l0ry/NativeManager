@@ -32,6 +32,9 @@ namespace NativeManager.WinApi
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool WriteProcessMemory(IntPtr hProcess, void* lpBaseAddress,[In] byte[] lpBuffer, int nSize, IntPtr lpNumberOfBytesWritten);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool WriteProcessMemory(IntPtr hProcess, void* lpBaseAddress, [In] void* lpBuffer, int nSize, IntPtr lpNumberOfBytesWritten);
+
         [DllImport("kernel32.dll")]
         public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
 
