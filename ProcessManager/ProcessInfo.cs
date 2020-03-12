@@ -28,7 +28,26 @@ namespace NativeManager.ProcessManager
 
         public static ProcessModule GetModule(this Process process, string module) => process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
 
-        public static Dictionary<string, IntPtr> GetModules(this Process process)
+        public static Dictionary<string, ProcessModule> GetModules(this Process process)
+        {
+            Dictionary<string, ProcessModule> Modules = new Dictionary<string, ProcessModule>();
+
+            if (process.Modules.Count == 0)
+            {
+                throw new IndexOutOfRangeException("Modules equals zero.");
+            }
+
+            process.Modules.Cast<ProcessModule>().All(mdl =>
+            {
+                Modules.Add(mdl.ModuleName, mdl);
+
+                return true;
+            });
+
+            return Modules;
+        }
+
+        public static Dictionary<string, IntPtr> GetAddressModules(this Process process)
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
@@ -47,20 +66,20 @@ namespace NativeManager.ProcessManager
             return Modules;
         }
 
-        public static Dictionary<string, IntPtr> GetModules(this Process[] process, int index = 0)
+        public static Dictionary<string, IntPtr> GetAddressModules(this Process[] process, int index = 0)
         {
             Found(process, index);
 
-            return GetModules(process[index]);
+            return GetAddressModules(process[index]);
         }
 
-        public static Dictionary<string, IntPtr> GetModules(this string processName, int index = 0)
+        public static Dictionary<string, IntPtr> GetAddressModules(this string processName, int index = 0)
         {
             Process[] process = Process.GetProcessesByName(processName);
 
             Found(process, index);
 
-            return GetModules(process[index]);
+            return GetAddressModules(process[index]);
         }
 
         public static void Found(this Process[] process, int index)
