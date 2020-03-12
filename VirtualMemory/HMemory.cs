@@ -126,7 +126,9 @@ namespace NativeManager.VirtualMemory
         #region Working with modules
         public ProcessModule GetModule(string module) => ProcessMemory.GetModule(module);
 
-        public Dictionary<string, IntPtr> GetModules() => ProcessMemory.GetModules();
+        public Dictionary<string, ProcessModule> GetModules() => ProcessMemory.GetModules();
+
+        public Dictionary<string, IntPtr> GetAddressModules() => ProcessMemory.GetAddressModules();
         #endregion
 
         #region Memory operation
@@ -186,7 +188,20 @@ namespace NativeManager.VirtualMemory
 
         public bool CallFunction<T>(IntPtr address, T args) => CallFunction(address, StructureToByte(args));
 
-        public bool MemoryCopy<TSrc>(TSrc* src, int srcOffset, void* dst, int dstOffset, int count) where TSrc : unmanaged => Kernel32.WriteProcessMemory(Handle, (byte*)dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
+        public bool BlockCopy<TArray>(TArray[] src, int srcOffset, void* dst, int dstOffset, int count) where TArray : unmanaged
+        {
+            if (srcOffset > src.Length - 1)
+            {
+                throw new IndexOutOfRangeException("srcOffset is more than the length of the array");
+            }
+
+            fixed (TArray* srcPtr = src)
+            {
+                return Kernel32.WriteProcessMemory(Handle, (byte*)dst + dstOffset, srcPtr + srcOffset, count * sizeof(TArray), IntPtr.Zero);
+            }
+        }
+
+        public bool MemoryCopy<TSrc>(TSrc* src, int srcOffset, void* dst, int dstOffset, int count) where TSrc : unmanaged => Kernel32.WriteProcessMemory(Handle, (byte*)dst + dstOffset, (byte*)src + srcOffset, count, IntPtr.Zero);
         #endregion
 
         public IntPtr FindPattern(uint module, byte[] pattern, int offset = 0) => Pattern.FindPattern(this, module, pattern, offset);
