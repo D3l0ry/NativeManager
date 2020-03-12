@@ -16,7 +16,7 @@ namespace NativeManager.ProcessManager
             return process[index];
         }
 
-        public static Process GetProcess(string processName, int index = 0) => GetProcess(Process.GetProcessesByName(processName));
+        public static Process GetProcess(string processName, int index = 0) => GetProcess(Process.GetProcessesByName(processName),index);
 
         public static bool IsProcessActive(this Process[] process) => process.Length > 0 ? true : false;
 
@@ -24,23 +24,15 @@ namespace NativeManager.ProcessManager
 
         public static bool IsProcessActiveWindow(this Process process) => process.MainWindowHandle == User32.GetForegroundWindow() ? true : false;
 
-        public static bool IsProcessActiveWindow(this string processName) => (GetProcess(processName)?.MainWindowHandle ?? IntPtr.Zero) == User32.GetForegroundWindow() ? true : false;
+        public static bool IsProcessActiveWindow(this string processName) => GetProcess(processName).MainWindowHandle == User32.GetForegroundWindow() ? true : false;
 
-        public static ProcessModule GetModule(this Process process, string module)
-        {
-            if (string.IsNullOrWhiteSpace(module))
-            {
-                throw new ArgumentException("Argument is Null or WhiteSpace");
-            }
-
-            return process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.FileName.Equals(module, StringComparison.OrdinalIgnoreCase));
-        }
+        public static ProcessModule GetModule(this Process process, string module) => process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
 
         public static Dictionary<string, IntPtr> GetModules(this Process process)
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
-            if(process.Modules.Count == 0)
+            if (process.Modules.Count == 0)
             {
                 throw new IndexOutOfRangeException("Modules equals zero.");
             }
