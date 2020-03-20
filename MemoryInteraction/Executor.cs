@@ -24,28 +24,25 @@ namespace NativeManager.MemoryInteraction
             return thread != IntPtr.Zero;
         }
 
-        public byte[] StructureToByte<T>(T structure)
+        public static byte[] StructureToByte<T>(T structure) where T : unmanaged
         {
             int length = Marshal.SizeOf<T>();
 
             byte[] array = new byte[length];
 
-            IntPtr ptr = Marshal.AllocHGlobal(length);
-
-            Marshal.StructureToPtr(structure, ptr, true);
-
-            Marshal.Copy(ptr, array, 0, length);
-
-            Marshal.FreeHGlobal(ptr);
+            fixed (void* arrayPtr = array)
+            {
+                Buffer.MemoryCopy(&structure, arrayPtr, length, length);
+            }
 
             return array;
         }
 
-        public T ByteToStructure<T>(byte[] bytes)
+        public static T ByteToStructure<T>(byte[] bytes) where T : unmanaged
         {
             fixed (byte* bytesPtr = bytes)
             {
-                return Marshal.PtrToStructure<T>((IntPtr)bytesPtr);
+                return *(T*)bytesPtr;
             }
         }
 
@@ -56,14 +53,14 @@ namespace NativeManager.MemoryInteraction
 
             try
             {
-                alloc = m_Memory.Alloc((uint)args.Length);
+                alloc = m_Memory.GetAllocator().Alloc((uint)args.Length);
 
                 if (alloc == IntPtr.Zero)
                 {
                     return false;
                 }
 
-                if (!m_Memory.WriteBytes(alloc,args))
+                if (!m_Memory.WriteBytes(alloc, args))
                 {
                     return false;
                 }
@@ -72,12 +69,12 @@ namespace NativeManager.MemoryInteraction
             }
             finally
             {
-                m_Memory.Free(alloc);
+                m_Memory.GetAllocator().Free(alloc);
             }
 
             return execute;
         }
 
-        public bool CallFunction<T>(IntPtr address, T args) => CallFunction(address, StructureToByte(args));
+        public bool CallFunction<T>(IntPtr address, T args) where T : unmanaged => CallFunction(address, StructureToByte(args));
     }
 }
