@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 
 using NativeManager.WinApi.Enums;
 
@@ -23,7 +22,7 @@ namespace NativeManager.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true, ExactSpelling = true)]
-        public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress,uint dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
+        public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true, ExactSpelling = true)]
@@ -31,7 +30,7 @@ namespace NativeManager.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll)]
-        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress,UIntPtr dwSize, ProtectCode flNewProtect, out ProtectCode lpflOldProtect);
+        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, ProtectCode flNewProtect, out ProtectCode lpflOldProtect);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]
@@ -39,7 +38,7 @@ namespace NativeManager.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress,[In] byte[] lpBuffer, int nSize, IntPtr lpNumberOfBytesWritten);
+        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In] byte[] lpBuffer, int nSize, IntPtr lpNumberOfBytesWritten);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]
