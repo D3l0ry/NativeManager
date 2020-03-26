@@ -30,7 +30,7 @@ namespace NativeManager.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll)]
-        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, ProtectCode flNewProtect, out ProtectCode lpflOldProtect);
+        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, AllocationProtect flNewProtect, out AllocationProtect lpflOldProtect);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]
@@ -63,5 +63,9 @@ namespace NativeManager.WinApi
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, CharSet = CharSet.Auto)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport(m_KernelDll)]
+        public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
     }
 }
