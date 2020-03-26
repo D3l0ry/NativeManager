@@ -8,7 +8,7 @@ namespace NativeManager.MemoryInteraction.Interfaces
     {
         IntPtr Alloc(uint size, AllocationType allocationType = AllocationType.Commit | AllocationType.Reserve, MemoryProtection memoryProtection = MemoryProtection.ExecuteReadWrite);
 
-        bool Protect(IntPtr address, uint size, ProtectCode protectCode, out ProtectCode oldProtect);
+        bool Protect(IntPtr address, uint size, AllocationProtect protectCode, out AllocationProtect oldProtect);
 
         bool Free(IntPtr address);
     }
