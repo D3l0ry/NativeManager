@@ -64,7 +64,7 @@ namespace NativeManager.MemoryInteraction
                 return buffer;
             }
 
-            return new byte[1];
+            return buffer;
         }
 
         public bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(Handle, address, buffer, buffer.Length, IntPtr.Zero);
@@ -90,9 +90,19 @@ namespace NativeManager.MemoryInteraction
         #region Operation with memory
         public bool BlockCopy<TArray>(TArray[] src, int srcOffset, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
         {
-            if (srcOffset > src.Length - 1)
+            if(count == 0)
+            {
+                return false;
+            }
+
+            if (srcOffset >= src.Length)
             {
                 throw new IndexOutOfRangeException("srcOffset is more than the length of the array");
+            }
+
+            if(count > src.Length - srcOffset)
+            {
+                throw new IndexOutOfRangeException("count is more than the length of the array");
             }
 
             fixed (TArray* srcPtr = src)
@@ -101,7 +111,15 @@ namespace NativeManager.MemoryInteraction
             }
         }
 
-        public bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, int count) => Kernel32.WriteProcessMemory(Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
+        public bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, int count)
+        {
+            if(count == 0)
+            {
+                return false;
+            }
+
+            return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
+        }
         #endregion
 
         #region Operations with allocator

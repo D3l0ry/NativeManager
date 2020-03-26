@@ -18,6 +18,6 @@ namespace NativeManager.MemoryInteraction
 
         public bool Free(IntPtr address) => Kernel32.VirtualFreeEx(m_Memory.Handle, address, 0, AllocationType.Release);
 
-        public bool Protect(IntPtr address, uint size, ProtectCode protectCode, out ProtectCode oldProtect) => Kernel32.VirtualProtectEx(m_Memory.Handle, address, (UIntPtr)size, protectCode, out oldProtect);
+        public bool Protect(IntPtr address, uint size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Memory.Handle, address, (UIntPtr)size, protectCode, out oldProtect);
     }
 }
