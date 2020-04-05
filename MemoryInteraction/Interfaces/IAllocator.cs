@@ -6,7 +6,7 @@ namespace NativeManager.MemoryInteraction.Interfaces
 {
     public interface IAllocator
     {
-        IntPtr Alloc(uint size, AllocationType allocationType = AllocationType.Commit | AllocationType.Reserve, MemoryProtection memoryProtection = MemoryProtection.ExecuteReadWrite);
+        IntPtr Alloc(uint size, AllocationType allocationType = AllocationType.MEM_COMMIT | AllocationType.MEM_RESERVE, MemoryProtection memoryProtection = MemoryProtection.PAGE_EXECUTE_READWRITE);
 
         bool Protect(IntPtr address, uint size, AllocationProtect protectCode, out AllocationProtect oldProtect);
 
