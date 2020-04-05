@@ -26,7 +26,7 @@ namespace NativeManager.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true, ExactSpelling = true)]
-        public static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, AllocationType dwFreeType);
+        public static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, FreeType dwFreeType);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll)]
@@ -53,19 +53,10 @@ namespace NativeManager.WinApi
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
         [SuppressUnmanagedCodeSecurity]
-        [DllImport("psapi.dll", SetLastError = true)]
-        public static extern bool GetModuleInformation(IntPtr hProcess, IntPtr hModule, out MODULEINFO lpmodinfo, int cb);
-
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(m_KernelDll, CharSet = CharSet.Ansi, ExactSpelling = false, SetLastError = true)]
-        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(m_KernelDll, CharSet = CharSet.Auto)]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll)]
         public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
+
+        [DllImport(m_KernelDll, SetLastError = true)]
+        public static extern void GetSystemInfo(ref SYSTEM_INFO Info);
     }
 }
