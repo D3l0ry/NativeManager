@@ -40,6 +40,16 @@ namespace NativeManager.MemoryInteraction
 
         public static T ByteToStructure<T>(byte[] bytes) where T : unmanaged
         {
+            if(bytes == null)
+            {
+                throw new ArgumentNullException("bytes");
+            }
+
+            if(bytes.Length < Marshal.SizeOf<T>())
+            {
+                throw new ArgumentOutOfRangeException("bytes", "bytes length smaller than the size of the structure");
+            }
+
             fixed (byte* bytesPtr = bytes)
             {
                 return *(T*)bytesPtr;
