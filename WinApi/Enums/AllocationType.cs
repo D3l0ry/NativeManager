@@ -5,14 +5,11 @@ namespace NativeManager.WinApi.Enums
     [Flags]
     public enum AllocationType
     {
-        Commit = 0x1000,
-        Reserve = 0x2000,
-        Decommit = 0x4000,
-        Release = 0x8000,
-        Reset = 0x80000,
-        Physical = 0x400000,
-        TopDown = 0x100000,
-        WriteWatch = 0x200000,
-        LargePages = 0x20000000
+        MEM_COMMIT = 0x1000,
+        MEM_RESERVE = 0x2000,
+        MEM_RESET = 0x80000,
+        MEM_PHYSICAL = 0x400000,
+        MEM_TOP_DOWN = 0x100000,
+        MEM_LARGE_PAGES = 0x20000000
     }
 }
