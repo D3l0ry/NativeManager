@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 
-using NativeManager.WinApi.Enums;
-using NativeManager.WinApi;
 using NativeManager.MemoryInteraction.Interfaces;
 
 namespace NativeManager.MemoryInteraction
@@ -16,16 +15,23 @@ namespace NativeManager.MemoryInteraction
 
         public PatternManager(IMemory memory) => m_MemoryManager = memory;
 
-        public IntPtr FindPattern(IntPtr module, byte[] pattern, int offset = 0)
+        public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int offset = 0)
         {
             if (pattern == null)
             {
                 return IntPtr.Zero;
             }
 
-            Kernel32.GetModuleInformation(m_MemoryManager.Handle, module, out MODULEINFO MODULEINFO, sizeof(MODULEINFO));
+            ProcessModule moduleInfo = m_MemoryManager.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(module => module.BaseAddress == modulePtr);
 
-            for (long PIndex = module.ToInt64(); PIndex < MODULEINFO.SizeOfImage; PIndex++)
+            if(moduleInfo == null)
+            {
+                throw new DllNotFoundException($"Could not find library at given address.");
+            }
+
+            long indexMax = modulePtr.ToInt64() + moduleInfo.ModuleMemorySize;
+
+            for (long PIndex = modulePtr.ToInt64(); PIndex < indexMax; PIndex++)
             {
                 bool Found = true;
 
@@ -48,7 +54,7 @@ namespace NativeManager.MemoryInteraction
             return IntPtr.Zero;
         }
 
-        public IntPtr FindPattern(IntPtr module, string pattern, int offset = 0)
+        public IntPtr FindPattern(IntPtr modulePtr, string pattern, int offset = 0)
         {
             if (string.IsNullOrWhiteSpace(pattern))
             {
@@ -71,7 +77,7 @@ namespace NativeManager.MemoryInteraction
                 return true;
             });
 
-            return FindPattern(module, patterns.ToArray(), offset);
+            return FindPattern(modulePtr, patterns.ToArray(), offset);
         }
     }
 }
