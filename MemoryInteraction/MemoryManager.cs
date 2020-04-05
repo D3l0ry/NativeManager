@@ -24,7 +24,7 @@ namespace NativeManager.MemoryInteraction
         public Process ProcessMemory { get; private set; }
         #endregion
 
-        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.All)
+        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL)
         {
             ProcessMemory = process;
             Handle = Kernel32.OpenProcess(access, false, ProcessMemory.Id);
@@ -35,7 +35,7 @@ namespace NativeManager.MemoryInteraction
             }
         }
 
-        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.All)
+        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL)
         {
             Process[] localProcess = Process.GetProcessesByName(processName);
 
@@ -88,32 +88,32 @@ namespace NativeManager.MemoryInteraction
         public bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, Executor.StructureToByte(value));
 
         #region Operation with memory
-        public bool BlockCopy<TArray>(TArray[] src, int srcOffset, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
+        public bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
         {
-            if(count == 0)
+            if (count == 0)
             {
                 return false;
             }
 
-            if (srcOffset >= src.Length)
+            if (index >= src.Length)
             {
                 throw new IndexOutOfRangeException("srcOffset is more than the length of the array");
             }
 
-            if(count > src.Length - srcOffset)
+            if (count > src.Length - index)
             {
                 throw new IndexOutOfRangeException("count is more than the length of the array");
             }
 
-            fixed (TArray* srcPtr = src)
+            fixed (TArray* srcPtr = &src[index])
             {
-                return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, (IntPtr)(srcPtr + srcOffset), count * sizeof(TArray), IntPtr.Zero);
+                return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, (IntPtr)(srcPtr), count * sizeof(TArray), IntPtr.Zero);
             }
         }
 
         public bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, int count)
         {
-            if(count == 0)
+            if (count == 0)
             {
                 return false;
             }
