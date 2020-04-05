@@ -14,9 +14,9 @@ namespace NativeManager.MemoryInteraction
 
         public Allocator(IMemory allocator) => m_Memory = allocator;
 
-        public IntPtr Alloc(uint size, AllocationType allocationType = AllocationType.Commit | AllocationType.Reserve, MemoryProtection memoryProtection = MemoryProtection.ExecuteReadWrite) => Kernel32.VirtualAllocEx(m_Memory.Handle, IntPtr.Zero, size, allocationType, memoryProtection);
+        public IntPtr Alloc(uint size, AllocationType allocationType = AllocationType.MEM_COMMIT | AllocationType.MEM_RESERVE, MemoryProtection memoryProtection = MemoryProtection.PAGE_EXECUTE_READWRITE) => Kernel32.VirtualAllocEx(m_Memory.Handle, IntPtr.Zero, size, allocationType, memoryProtection);
 
-        public bool Free(IntPtr address) => Kernel32.VirtualFreeEx(m_Memory.Handle, address, 0, AllocationType.Release);
+        public bool Free(IntPtr address) => Kernel32.VirtualFreeEx(m_Memory.Handle, address, 0, FreeType.MEM_RELEASE);
 
         public bool Protect(IntPtr address, uint size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Memory.Handle, address, (UIntPtr)size, protectCode, out oldProtect);
     }
