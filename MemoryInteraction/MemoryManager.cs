@@ -14,6 +14,7 @@ namespace NativeManager.MemoryInteraction
         #region Private variables
         private Allocator m_Allocator;
         private Executor m_Executor;
+        private PageManager m_PageManager;
         private PatternManager m_PatternManager;
         private ProcessInfo m_ProcessInfo;
         #endregion
@@ -97,7 +98,7 @@ namespace NativeManager.MemoryInteraction
 
             if (index >= src.Length)
             {
-                throw new IndexOutOfRangeException("srcOffset is more than the length of the array");
+                throw new IndexOutOfRangeException("index is more than the length of the array");
             }
 
             if (count > src.Length - index)
@@ -107,7 +108,7 @@ namespace NativeManager.MemoryInteraction
 
             fixed (TArray* srcPtr = &src[index])
             {
-                return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, (IntPtr)(srcPtr), count * sizeof(TArray), IntPtr.Zero);
+                return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, (IntPtr)srcPtr, count * sizeof(TArray), IntPtr.Zero);
             }
         }
 
@@ -143,6 +144,18 @@ namespace NativeManager.MemoryInteraction
             }
 
             return m_Executor;
+        }
+        #endregion
+
+        #region Operations with page
+        public PageManager GetPageManager()
+        {
+            if (m_PageManager == null)
+            {
+                m_PageManager = new PageManager(this);
+            }
+
+            return m_PageManager;
         }
         #endregion
 
