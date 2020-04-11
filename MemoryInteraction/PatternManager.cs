@@ -10,10 +10,29 @@ namespace NativeManager.MemoryInteraction
     public unsafe class PatternManager
     {
         #region Private variables
-        private readonly IMemory m_MemoryManager;
+        private readonly IMemory m_Memory;
         #endregion
 
-        public PatternManager(IMemory memory) => m_MemoryManager = memory;
+        public PatternManager(IMemory memory) => m_Memory = memory;
+
+        public IntPtr FindPattern(string module, byte[] pattern, int offset = 0)
+        {
+            if (pattern == null)
+            {
+                return IntPtr.Zero;
+            }
+
+            ProcessModule moduleInfo = m_Memory.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
+
+            if (moduleInfo == null)
+            {
+                throw new DllNotFoundException($"Could not find library at given address.");
+            }
+
+            return FindPattern(moduleInfo, pattern, offset);
+        }
+
+        public IntPtr FindPattern(string module, string pattern, int offset = 0) => FindPattern(module, GetPattern(pattern), offset);
 
         public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int offset = 0)
         {
@@ -22,22 +41,56 @@ namespace NativeManager.MemoryInteraction
                 return IntPtr.Zero;
             }
 
-            ProcessModule moduleInfo = m_MemoryManager.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(module => module.BaseAddress == modulePtr);
+            ProcessModule moduleInfo = m_Memory.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == modulePtr);
 
-            if(moduleInfo == null)
+            if (moduleInfo == null)
             {
                 throw new DllNotFoundException($"Could not find library at given address.");
             }
 
-            long indexMax = modulePtr.ToInt64() + moduleInfo.ModuleMemorySize;
+            return FindPattern(moduleInfo, pattern, offset);
+        }
 
-            for (long PIndex = modulePtr.ToInt64(); PIndex < indexMax; PIndex++)
+        public IntPtr FindPattern(IntPtr modulePtr, string pattern, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), offset);
+
+        private byte[] GetPattern(string pattern)
+        {
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                throw new ArgumentNullException("pattern");
+            }
+
+            List<byte> patternsBytes = new List<byte>();
+
+            List<string> patternsStrings = pattern.Split(' ').ToList();
+            patternsStrings.RemoveAll(str => str == "");
+
+            foreach (string str in patternsStrings)
+            {
+                if (str == "?")
+                {
+                    patternsBytes.Add(0);
+                }
+                else
+                {
+                    patternsBytes.Add(Convert.ToByte(str, 16));
+                }
+            }
+
+            return patternsBytes.ToArray();
+        }
+
+        private IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
+        {
+            long indexMax = moduleInfo.BaseAddress.ToInt64() + moduleInfo.ModuleMemorySize;
+
+            for (long PIndex = moduleInfo.BaseAddress.ToInt64(); PIndex < indexMax; PIndex++)
             {
                 bool Found = true;
 
                 for (int MIndex = 0; MIndex < pattern.Length; MIndex++)
                 {
-                    Found = pattern[MIndex] == 0 || m_MemoryManager.Read<byte>((IntPtr)(PIndex + MIndex)) == pattern[MIndex];
+                    Found = pattern[MIndex] == 0 || m_Memory.Read<byte>((IntPtr)(PIndex + MIndex)) == pattern[MIndex];
 
                     if (!Found)
                     {
@@ -52,32 +105,6 @@ namespace NativeManager.MemoryInteraction
             }
 
             return IntPtr.Zero;
-        }
-
-        public IntPtr FindPattern(IntPtr modulePtr, string pattern, int offset = 0)
-        {
-            if (string.IsNullOrWhiteSpace(pattern))
-            {
-                return IntPtr.Zero;
-            }
-
-            List<byte> patterns = new List<byte>();
-
-            pattern.Split(' ').All((X) =>
-            {
-                if (X.Equals("?"))
-                {
-                    patterns.Add(0);
-                }
-                else
-                {
-                    patterns.Add(Convert.ToByte(X, 16));
-                }
-
-                return true;
-            });
-
-            return FindPattern(modulePtr, patterns.ToArray(), offset);
         }
     }
 }
