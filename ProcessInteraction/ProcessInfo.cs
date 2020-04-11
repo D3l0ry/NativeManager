@@ -63,7 +63,7 @@ namespace NativeManager.ProcessInteraction
             return Modules;
         }
 
-        public bool IsProcessActiveWindow() => m_Process.MainWindowHandle == User32.GetForegroundWindow();
+        public bool IsActiveWindow() => m_Process.MainWindowHandle == User32.GetForegroundWindow();
 
         internal static void Exists(Process[] process, int index = 0)
         {
