@@ -17,11 +17,6 @@ namespace NativeManager.MemoryInteraction
 
         public IntPtr FindPattern(string module, byte[] pattern, int offset = 0)
         {
-            if (pattern == null)
-            {
-                return IntPtr.Zero;
-            }
-
             ProcessModule moduleInfo = m_Memory.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
 
             if (moduleInfo == null)
@@ -36,11 +31,6 @@ namespace NativeManager.MemoryInteraction
 
         public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int offset = 0)
         {
-            if (pattern == null)
-            {
-                return IntPtr.Zero;
-            }
-
             ProcessModule moduleInfo = m_Memory.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == modulePtr);
 
             if (moduleInfo == null)
@@ -53,38 +43,28 @@ namespace NativeManager.MemoryInteraction
 
         public IntPtr FindPattern(IntPtr modulePtr, string pattern, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), offset);
 
-        private byte[] GetPattern(string pattern)
+        public IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
         {
-            if (string.IsNullOrWhiteSpace(pattern))
+            if(moduleInfo == null)
+            {
+                throw new ArgumentNullException("moduleInfo");
+            }
+
+            return FindPattern(moduleInfo.BaseAddress, pattern, moduleInfo.ModuleMemorySize, offset);
+        }
+
+        public IntPtr FindPattern(ProcessModule moduleInfo, string pattern, int offset = 0) => FindPattern(moduleInfo, GetPattern(pattern), offset);
+
+        public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int searchSize = 5000, int offset = 0)
+        {
+            if (pattern == null)
             {
                 throw new ArgumentNullException("pattern");
             }
 
-            List<byte> patternsBytes = new List<byte>();
+            long indexMax = modulePtr.ToInt64() + searchSize;
 
-            List<string> patternsStrings = pattern.Split(' ').ToList();
-            patternsStrings.RemoveAll(str => str == "");
-
-            foreach (string str in patternsStrings)
-            {
-                if (str == "?")
-                {
-                    patternsBytes.Add(0);
-                }
-                else
-                {
-                    patternsBytes.Add(Convert.ToByte(str, 16));
-                }
-            }
-
-            return patternsBytes.ToArray();
-        }
-
-        private IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
-        {
-            long indexMax = moduleInfo.BaseAddress.ToInt64() + moduleInfo.ModuleMemorySize;
-
-            for (long PIndex = moduleInfo.BaseAddress.ToInt64(); PIndex < indexMax; PIndex++)
+            for (long PIndex = modulePtr.ToInt64(); PIndex < indexMax; PIndex++)
             {
                 bool Found = true;
 
@@ -105,6 +85,35 @@ namespace NativeManager.MemoryInteraction
             }
 
             return IntPtr.Zero;
+        }
+
+        public IntPtr FindPattern(IntPtr modulePtr, string pattern, int searchSize = 5000, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), searchSize, offset);
+
+        private byte[] GetPattern(string pattern)
+        {
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                throw new ArgumentNullException("pattern");
+            }
+
+            List<byte> patternsBytes = new List<byte>(pattern.Length);
+
+            List<string> patternsStrings = pattern.Split(' ').ToList();
+            patternsStrings.RemoveAll(str => str == "");
+
+            foreach (string str in patternsStrings)
+            {
+                if (str == "?")
+                {
+                    patternsBytes.Add(0);
+                }
+                else
+                {
+                    patternsBytes.Add(Convert.ToByte(str, 16));
+                }
+            }
+
+            return patternsBytes.ToArray();
         }
     }
 }
