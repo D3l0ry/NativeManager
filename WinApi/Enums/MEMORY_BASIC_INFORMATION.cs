@@ -15,9 +15,7 @@ namespace NativeManager.WinApi.Enums
         public AllocationProtect Protect;
         public MemoryType Type;
     }
-#endif
-
-#if WIN64
+#elif WIN64
     [StructLayout(LayoutKind.Sequential)]
     public struct MEMORY_BASIC_INFORMATION
     {
