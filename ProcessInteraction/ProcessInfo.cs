@@ -22,7 +22,31 @@ namespace NativeManager.ProcessInteraction
                 throw new InvalidOperationException("Modules equals zero.");
             }
 
-            return m_Process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
+            var processModule = m_Process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
+
+            if (processModule == null)
+            {
+                throw new DllNotFoundException($"Could not find library at given address.");
+            }
+
+            return processModule;
+        }
+
+        public ProcessModule GetModule(IntPtr modulePtr)
+        {
+            if (m_Process.Modules.Count == 0)
+            {
+                throw new InvalidOperationException("Modules equals zero.");
+            }
+
+            var processModule = m_Process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == modulePtr);
+
+            if (processModule == null)
+            {
+                throw new DllNotFoundException($"Could not find library at given address.");
+            }
+
+            return processModule;
         }
 
         public Dictionary<string, ProcessModule> GetModules()
@@ -31,7 +55,7 @@ namespace NativeManager.ProcessInteraction
 
             if (m_Process.Modules.Count == 0)
             {
-                throw new InvalidOperationException("Modules equals zero.");
+                throw new InvalidOperationException("Modules equals zero");
             }
 
             m_Process.Modules.Cast<ProcessModule>().All(mdl =>
@@ -44,18 +68,66 @@ namespace NativeManager.ProcessInteraction
             return Modules;
         }
 
-        public Dictionary<string, IntPtr> GetAddressModules()
+        public Dictionary<string, IntPtr> GetModuleAddress()
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
-            if (m_Process.Modules.Count == 0)
+            foreach(var module in GetModules())
+            {
+                Modules.Add(module.Key, module.Value.BaseAddress);
+            }
+
+            return Modules;
+        }
+
+        public bool IsActiveWindow() => m_Process.MainWindowHandle == User32.GetForegroundWindow();
+
+        public static ProcessModule GetModule(Process process,string module)
+        {
+            if (process.Modules.Count == 0)
             {
                 throw new InvalidOperationException("Modules equals zero.");
             }
 
-            m_Process.Modules.Cast<ProcessModule>().All(mdl =>
+            var processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
+
+            if (processModule == null)
             {
-                Modules.Add(mdl.ModuleName, mdl.BaseAddress);
+                throw new DllNotFoundException($"Could not find library at given address.");
+            }
+
+            return processModule;
+        }
+
+        public static ProcessModule GetModule(Process process, IntPtr modulePtr)
+        {
+            if (process.Modules.Count == 0)
+            {
+                throw new InvalidOperationException("Modules equals zero.");
+            }
+
+            var processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == modulePtr);
+
+            if (processModule == null)
+            {
+                throw new DllNotFoundException($"Could not find library at given address.");
+            }
+
+            return processModule;
+        }
+
+        public static Dictionary<string, ProcessModule> GetModules(Process process)
+        {
+            Dictionary<string, ProcessModule> Modules = new Dictionary<string, ProcessModule>();
+
+            if (process.Modules.Count == 0)
+            {
+                throw new InvalidOperationException("Modules equals zero");
+            }
+
+            process.Modules.Cast<ProcessModule>().All(mdl =>
+            {
+                Modules.Add(mdl.ModuleName, mdl);
 
                 return true;
             });
@@ -63,7 +135,17 @@ namespace NativeManager.ProcessInteraction
             return Modules;
         }
 
-        public bool IsActiveWindow() => m_Process.MainWindowHandle == User32.GetForegroundWindow();
+        public static Dictionary<string, IntPtr> GetModuleAddress(Process process)
+        {
+            Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
+
+            foreach (var module in GetModules(process))
+            {
+                Modules.Add(module.Key, module.Value.BaseAddress);
+            }
+
+            return Modules;
+        }
 
         internal static void Exists(Process[] process, int index = 0)
         {
