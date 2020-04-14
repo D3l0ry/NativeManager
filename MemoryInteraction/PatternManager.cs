@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using NativeManager.MemoryInteraction.Interfaces;
+using NativeManager.ProcessInteraction;
 
 namespace NativeManager.MemoryInteraction
 {
@@ -15,35 +16,25 @@ namespace NativeManager.MemoryInteraction
 
         public PatternManager(IMemory memory) => m_Memory = memory;
 
-        public IntPtr FindPattern(string module, byte[] pattern, int offset = 0)
+        public virtual IntPtr FindPattern(string module, byte[] pattern, int offset = 0)
         {
-            ProcessModule moduleInfo = m_Memory.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == module);
-
-            if (moduleInfo == null)
-            {
-                throw new DllNotFoundException($"Could not find library at given address.");
-            }
+            ProcessModule moduleInfo = ProcessInfo.GetModule(m_Memory.ProcessMemory, module);
 
             return FindPattern(moduleInfo, pattern, offset);
         }
 
-        public IntPtr FindPattern(string module, string pattern, int offset = 0) => FindPattern(module, GetPattern(pattern), offset);
+        public virtual IntPtr FindPattern(string module, string pattern, int offset = 0) => FindPattern(module, GetPattern(pattern), offset);
 
-        public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int offset = 0)
+        public virtual IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int offset = 0)
         {
-            ProcessModule moduleInfo = m_Memory.ProcessMemory.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == modulePtr);
-
-            if (moduleInfo == null)
-            {
-                throw new DllNotFoundException($"Could not find library at given address.");
-            }
+            ProcessModule moduleInfo = ProcessInfo.GetModule(m_Memory.ProcessMemory, modulePtr);
 
             return FindPattern(moduleInfo, pattern, offset);
         }
 
-        public IntPtr FindPattern(IntPtr modulePtr, string pattern, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), offset);
+        public virtual IntPtr FindPattern(IntPtr modulePtr, string pattern, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), offset);
 
-        public IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
+        public virtual IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
         {
             if(moduleInfo == null)
             {
@@ -53,9 +44,9 @@ namespace NativeManager.MemoryInteraction
             return FindPattern(moduleInfo.BaseAddress, pattern, moduleInfo.ModuleMemorySize, offset);
         }
 
-        public IntPtr FindPattern(ProcessModule moduleInfo, string pattern, int offset = 0) => FindPattern(moduleInfo, GetPattern(pattern), offset);
+        public virtual IntPtr FindPattern(ProcessModule moduleInfo, string pattern, int offset = 0) => FindPattern(moduleInfo, GetPattern(pattern), offset);
 
-        public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int searchSize = 5000, int offset = 0)
+        public virtual IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int searchSize = 5000, int offset = 0)
         {
             if (pattern == null)
             {
@@ -87,7 +78,7 @@ namespace NativeManager.MemoryInteraction
             return IntPtr.Zero;
         }
 
-        public IntPtr FindPattern(IntPtr modulePtr, string pattern, int searchSize = 5000, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), searchSize, offset);
+        public virtual IntPtr FindPattern(IntPtr modulePtr, string pattern, int searchSize = 5000, int offset = 0) => FindPattern(modulePtr, GetPattern(pattern), searchSize, offset);
 
         private byte[] GetPattern(string pattern)
         {
