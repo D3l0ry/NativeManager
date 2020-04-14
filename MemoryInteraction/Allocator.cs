@@ -12,7 +12,7 @@ namespace NativeManager.MemoryInteraction
         private readonly IMemory m_Memory;
         #endregion
 
-        public Allocator(IMemory allocator) => m_Memory = allocator;
+        public Allocator(IMemory memory) => m_Memory = memory;
 
         public IntPtr Alloc(uint size, AllocationType allocationType = AllocationType.MEM_COMMIT | AllocationType.MEM_RESERVE, MemoryProtection memoryProtection = MemoryProtection.PAGE_EXECUTE_READWRITE) => Kernel32.VirtualAllocEx(m_Memory.Handle, IntPtr.Zero, size, allocationType, memoryProtection);
 
