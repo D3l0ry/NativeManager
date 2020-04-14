@@ -9,6 +9,7 @@ namespace NativeManager.WinApi
     {
         private const string m_UserDll = "user32.dll";
 
+        [SuppressUnmanagedCodeSecurity]
         [DllImport(m_UserDll)]
         public static extern IntPtr GetForegroundWindow();
     }
