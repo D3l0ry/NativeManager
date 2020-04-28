@@ -8,9 +8,7 @@ namespace NativeManager.MemoryInteraction
 {
     public class Allocator : IAllocator
     {
-        #region Private variables
         private readonly IMemory m_Memory;
-        #endregion
 
         public Allocator(IMemory memory) => m_Memory = memory;
 
