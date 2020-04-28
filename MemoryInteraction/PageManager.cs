@@ -11,9 +11,7 @@ namespace NativeManager.MemoryInteraction
 {
     public unsafe class PageManager
     {
-        #region Private variables
         private readonly IMemory m_Memory;
-        #endregion
 
         public PageManager(IMemory memory) => m_Memory = memory;
 
@@ -39,17 +37,47 @@ namespace NativeManager.MemoryInteraction
 
         public MEMORY_BASIC_INFORMATION[] GetPagesInformation(IntPtr address)
         {
-            List<MEMORY_BASIC_INFORMATION> pages = new List<MEMORY_BASIC_INFORMATION>(10);
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
-            byte* startAddress = (byte*)address.ToPointer();
-            byte* maximumAddress = (byte*)systemInfo.lpMaximumApplicationAddress.ToPointer();
-
-            while(startAddress < maximumAddress)
+            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
             {
-                pages.Add(GetPage((IntPtr)startAddress));
+                throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
+            }
 
-                startAddress += systemInfo.dwPageSize;
+            return GetPages(address, systemInfo.lpMaximumApplicationAddress);
+        }
+
+        public MEMORY_BASIC_INFORMATION[] GetPagesInformation()
+        {
+            SYSTEM_INFO systemInfo = GetSystemInfo();
+
+            return GetPages(systemInfo.lpMinimumApplicationAddress, systemInfo.lpMaximumApplicationAddress);
+        }
+
+        private MEMORY_BASIC_INFORMATION GetPage(IntPtr address)
+        {
+            if (!VirtualQuery(address, out MEMORY_BASIC_INFORMATION pageInformation))
+            {
+                throw new Win32Exception("VirtualQuery returned zero");
+            }
+
+            return pageInformation;
+        }
+
+        private MEMORY_BASIC_INFORMATION[] GetPages(IntPtr startAddress, IntPtr endAddress)
+        {
+            List<MEMORY_BASIC_INFORMATION> pages = new List<MEMORY_BASIC_INFORMATION>(5);
+
+            long minAddress = startAddress.ToInt64();
+            long maxAddress = endAddress.ToInt64();
+
+            while (minAddress < maxAddress)
+            {
+                MEMORY_BASIC_INFORMATION page = GetPage(startAddress);
+
+                pages.Add(page);
+
+                minAddress += page.RegionSize.ToInt64();
             }
 
             return pages.ToArray();
@@ -62,16 +90,6 @@ namespace NativeManager.MemoryInteraction
             Kernel32.GetSystemInfo(ref systemInfo);
 
             return systemInfo;
-        }
-
-        private MEMORY_BASIC_INFORMATION GetPage(IntPtr address)
-        {
-            if (!VirtualQuery(address, out MEMORY_BASIC_INFORMATION pageInformation))
-            {
-                throw new Win32Exception("VirtualQuery returned zero");
-            }
-
-            return pageInformation;
         }
 
         private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation)
