@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using NativeManager.MemoryInteraction.Interfaces;
@@ -9,7 +10,7 @@ using NativeManager.WinApi.Enums;
 
 namespace NativeManager.MemoryInteraction
 {
-    public unsafe class MemoryManager : IMemory, IDisposable
+    public unsafe class MemoryManager : SimpleMemoryManager, IMemory, IDisposable
     {
         #region Private variables
         private Allocator m_Allocator;
@@ -20,59 +21,22 @@ namespace NativeManager.MemoryInteraction
         #endregion
 
         #region Public properties
-        public IntPtr Handle { get; private set; }
-
         public Process ProcessMemory { get; private set; }
         #endregion
 
-        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL)
-        {
-            ProcessMemory = process;
-            Handle = Kernel32.OpenProcess(access, false, ProcessMemory.Id);
+        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL) : base(process, access) => ProcessMemory = process;
 
-            if (Handle == IntPtr.Zero)
-            {
-                throw new NullReferenceException("Failed to open process descriptor");
-            }
-        }
-
-        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL)
-        {
-            Process[] localProcess = Process.GetProcessesByName(processName);
-
-            ProcessInfo.Exists(localProcess, index);
-
-            ProcessMemory = localProcess[index];
-            Handle = Kernel32.OpenProcess(access, false, ProcessMemory.Id);
-
-            if (Handle == IntPtr.Zero)
-            {
-                throw new NullReferenceException("Failed to open process descriptor");
-            }
-        }
+        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL) : base(processName, index, access) => ProcessMemory = Process.GetProcessesByName(processName)[index];
 
         ~MemoryManager()
         {
             Kernel32.CloseHandle(Handle);
         }
 
-        public byte[] ReadBytes(IntPtr address, int size)
-        {
-            byte[] buffer = new byte[size];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual T Read<T>(IntPtr address) where T : unmanaged => Executor.ByteToStructure<T>(ReadBytes(address, Marshal.SizeOf<T>()));
 
-            if (Kernel32.ReadProcessMemory(Handle, address, buffer, size, IntPtr.Zero))
-            {
-                return buffer;
-            }
-
-            return buffer;
-        }
-
-        public bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(Handle, address, buffer, buffer.Length, IntPtr.Zero);
-
-        public T Read<T>(IntPtr address) where T : unmanaged => Executor.ByteToStructure<T>(ReadBytes(address, Marshal.SizeOf<T>()));
-
-        public T[] Read<T>(IntPtr address, int count) where T : unmanaged
+        public virtual T[] Read<T>(IntPtr address, int count) where T : unmanaged
         {
             int size = Marshal.SizeOf<T>();
 
@@ -86,10 +50,11 @@ namespace NativeManager.MemoryInteraction
             return elements;
         }
 
-        public bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, Executor.StructureToByte(value));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, Executor.StructureToByte(value));
 
         #region Operation with memory
-        public bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
+        public virtual bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
         {
             if (count == 0)
             {
@@ -112,7 +77,7 @@ namespace NativeManager.MemoryInteraction
             }
         }
 
-        public bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, int count)
+        public virtual bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, int count)
         {
             if (count == 0)
             {
