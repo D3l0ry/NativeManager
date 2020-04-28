@@ -9,9 +9,7 @@ namespace NativeManager.ProcessInteraction
 {
     public unsafe class ProcessInfo
     {
-        #region Private variables
         private readonly Process m_Process;
-        #endregion
 
         public ProcessInfo(Process process) => m_Process = process;
 
@@ -68,7 +66,7 @@ namespace NativeManager.ProcessInteraction
             return Modules;
         }
 
-        public Dictionary<string, IntPtr> GetModuleAddress()
+        public Dictionary<string, IntPtr> GetModulesAddress()
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
@@ -135,7 +133,7 @@ namespace NativeManager.ProcessInteraction
             return Modules;
         }
 
-        public static Dictionary<string, IntPtr> GetModuleAddress(Process process)
+        public static Dictionary<string, IntPtr> GetModulesAddress(Process process)
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
