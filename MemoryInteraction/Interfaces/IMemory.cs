@@ -3,10 +3,8 @@ using System.Diagnostics;
 
 namespace NativeManager.MemoryInteraction.Interfaces
 {
-    public interface IMemory : ISimpleMemory
+    public interface IMemory:ISimpleMemory
     {
-        IntPtr Handle { get; }
-
         Process ProcessMemory { get;}
 
         T Read<T>(IntPtr address) where T : unmanaged;
