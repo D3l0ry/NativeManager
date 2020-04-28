@@ -6,11 +6,9 @@ using NativeManager.WinApi;
 
 namespace NativeManager.MemoryInteraction
 {
-    public unsafe class Executor
+    public unsafe sealed class Executor
     {
-        #region Private variables
         private readonly IMemory m_Memory;
-        #endregion
 
         public Executor(IMemory memory) => m_Memory = memory;
 
@@ -40,12 +38,12 @@ namespace NativeManager.MemoryInteraction
 
         public static T ByteToStructure<T>(byte[] bytes) where T : unmanaged
         {
-            if(bytes == null)
+            if (bytes == null)
             {
                 throw new ArgumentNullException("bytes");
             }
 
-            if(bytes.Length < Marshal.SizeOf<T>())
+            if (bytes.Length < Marshal.SizeOf<T>())
             {
                 throw new ArgumentOutOfRangeException("bytes", "bytes length smaller than the size of the structure");
             }
