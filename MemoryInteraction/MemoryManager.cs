@@ -20,19 +20,16 @@ namespace NativeManager.MemoryInteraction
         private ProcessInfo m_ProcessInfo;
         #endregion
 
-        #region Public properties
-        public Process ProcessMemory { get; private set; }
-        #endregion
+        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL) : base(process, access) { }
 
-        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL) : base(process, access) => ProcessMemory = process;
-
-        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL) : base(processName, index, access) => ProcessMemory = Process.GetProcessesByName(processName)[index];
+        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL) : base(processName, index, access) { }
 
         ~MemoryManager()
         {
             Kernel32.CloseHandle(Handle);
         }
 
+        #region Read and Write
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address) where T : unmanaged => Executor.ByteToStructure<T>(ReadBytes(address, Marshal.SizeOf<T>()));
 
@@ -52,6 +49,7 @@ namespace NativeManager.MemoryInteraction
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, Executor.StructureToByte(value));
+        #endregion
 
         #region Operation with memory
         public virtual bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
@@ -141,11 +139,15 @@ namespace NativeManager.MemoryInteraction
         {
             if (m_ProcessInfo == null)
             {
-                m_ProcessInfo = new ProcessInfo(ProcessMemory);
+                m_ProcessInfo = new ProcessInfo(SelectedProcess);
             }
 
             return m_ProcessInfo;
         }
+        #endregion
+
+        #region Static methods
+        public static MemoryManager GetMemoryCurrentProcess(ProcessAccess access = ProcessAccess.ALL) => new MemoryManager(Process.GetCurrentProcess(), access);
         #endregion
 
         public void Dispose() => Kernel32.CloseHandle(Handle);
