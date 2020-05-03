@@ -16,7 +16,7 @@ namespace NativeManager.MemoryInteraction
 
         public IntPtr FindPattern(string module, byte[] pattern, int offset = 0)
         {
-            ProcessModule moduleInfo = ProcessInfo.GetModule(m_Memory.ProcessMemory, module);
+            ProcessModule moduleInfo = ProcessInfo.GetModule(m_Memory.SelectedProcess, module);
 
             return FindPattern(moduleInfo, pattern, offset);
         }
@@ -25,7 +25,7 @@ namespace NativeManager.MemoryInteraction
 
         public IntPtr FindPattern(IntPtr modulePtr, byte[] pattern, int offset = 0)
         {
-            ProcessModule moduleInfo = ProcessInfo.GetModule(m_Memory.ProcessMemory, modulePtr);
+            ProcessModule moduleInfo = ProcessInfo.GetModule(m_Memory.SelectedProcess, modulePtr);
 
             return FindPattern(moduleInfo, pattern, offset);
         }
