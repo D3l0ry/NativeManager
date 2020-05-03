@@ -12,6 +12,8 @@ namespace NativeManager.MemoryInteraction
     {
         public IntPtr Handle { get; private set; }
 
+        public Process SelectedProcess { get; private set; }
+
         public SimpleMemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL)
         {
             Handle = Kernel32.OpenProcess(access, false, process.Id);
@@ -20,21 +22,11 @@ namespace NativeManager.MemoryInteraction
             {
                 throw new NullReferenceException("Failed to open process descriptor");
             }
+
+            SelectedProcess = process;
         }
 
-        public SimpleMemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL)
-        {
-            Process[] localProcess = Process.GetProcessesByName(processName);
-
-            ProcessInfo.Exists(localProcess, index);
-
-            Handle = Kernel32.OpenProcess(access, false, localProcess[index].Id);
-
-            if (Handle == IntPtr.Zero)
-            {
-                throw new NullReferenceException("Failed to open process descriptor");
-            }
-        }
+        public SimpleMemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL):this(ProcessInfo.Exists(Process.GetProcessesByName(processName), index), access) { }
 
         public virtual byte[] ReadBytes(IntPtr address, int size)
         {
