@@ -10,7 +10,7 @@ using NativeManager.WinApi.Enums;
 
 namespace NativeManager.MemoryInteraction
 {
-    public unsafe class MemoryManager : SimpleMemoryManager, IMemory, IDisposable
+    public unsafe class MemoryManager : SimpleMemoryManager, IMemory
     {
         #region Private variables
         private Allocator m_Allocator;
@@ -20,14 +20,11 @@ namespace NativeManager.MemoryInteraction
         private ProcessInfo m_ProcessInfo;
         #endregion
 
-        public MemoryManager(Process process, ProcessAccess access = ProcessAccess.ALL) : base(process, access) { }
+        public MemoryManager(Process process) : base(process) { }
 
-        public MemoryManager(string processName, int index = 0, ProcessAccess access = ProcessAccess.ALL) : base(processName, index, access) { }
+        public MemoryManager(string processName, int index = 0) : base(processName, index) { }
 
-        ~MemoryManager()
-        {
-            Kernel32.CloseHandle(Handle);
-        }
+        public MemoryManager(int processId) : base(processId) { }
 
         #region Read and Write
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,7 +68,7 @@ namespace NativeManager.MemoryInteraction
 
             fixed (TArray* srcPtr = &src[index])
             {
-                return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, (IntPtr)srcPtr, count * sizeof(TArray), IntPtr.Zero);
+                return Kernel32.WriteProcessMemory(m_Handle, dst + dstOffset, (IntPtr)srcPtr, count * sizeof(TArray), IntPtr.Zero);
             }
         }
 
@@ -82,7 +79,7 @@ namespace NativeManager.MemoryInteraction
                 return false;
             }
 
-            return Kernel32.WriteProcessMemory(Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
+            return Kernel32.WriteProcessMemory(m_Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
         }
         #endregion
 
@@ -147,9 +144,7 @@ namespace NativeManager.MemoryInteraction
         #endregion
 
         #region Static methods
-        public static MemoryManager GetMemoryCurrentProcess(ProcessAccess access = ProcessAccess.ALL) => new MemoryManager(Process.GetCurrentProcess(), access);
+        public static MemoryManager GetMemoryCurrentProcess() => new MemoryManager(Process.GetCurrentProcess());
         #endregion
-
-        public void Dispose() => Kernel32.CloseHandle(Handle);
     }
 }
