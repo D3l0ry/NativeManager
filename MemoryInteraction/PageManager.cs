@@ -92,14 +92,6 @@ namespace NativeManager.MemoryInteraction
             return systemInfo;
         }
 
-        private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation)
-        {
-            if (Kernel32.VirtualQueryEx(m_Memory.Handle, address, out pageInformation, (uint)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) == 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
+        private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(m_Memory.SelectedProcess.Handle, address, out pageInformation, (uint)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
     }
 }
