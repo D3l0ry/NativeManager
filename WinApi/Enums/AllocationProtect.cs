@@ -5,6 +5,7 @@ namespace NativeManager.WinApi.Enums
     [Flags]
     public enum AllocationProtect : uint
     {
+        PAGE_ERROR_PROTECT = 0x0,
         PAGE_NOACCESS = 0x01,
         PAGE_READONLY = 0x02,
         PAGE_READWRITE = 0x04,
