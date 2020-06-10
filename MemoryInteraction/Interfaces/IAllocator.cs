@@ -6,13 +6,21 @@ namespace NativeManager.MemoryInteraction.Interfaces
 {
     public interface IAllocator
     {
-        IntPtr Alloc(uint size, MemoryProtection memoryProtection = MemoryProtection.PAGE_EXECUTE_READWRITE);
+        IntPtr Alloc(int size);
 
-        IntPtr Reset(IntPtr address, uint size);
+        IntPtr Alloc(IntPtr size);
 
-        IntPtr Undo(IntPtr address, uint size);
+        IntPtr Reset(IntPtr address, int size);
 
-        bool Protect(IntPtr address, uint size, AllocationProtect protectCode, out AllocationProtect oldProtect);
+        IntPtr Reset(IntPtr address, IntPtr size);
+
+        IntPtr Undo(IntPtr address, int size);
+
+        IntPtr Undo(IntPtr address, IntPtr size);
+
+        bool Protect(IntPtr address, int size, AllocationProtect protectCode, out AllocationProtect oldProtect);
+
+        bool Protect(IntPtr address, IntPtr size, AllocationProtect protectCode, out AllocationProtect oldProtect);
 
         bool Free(IntPtr address);
     }
