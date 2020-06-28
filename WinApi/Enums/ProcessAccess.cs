@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NativeManager.WinApi.Enums
+﻿namespace System.WinApi
 {
     [Flags]
     public enum ProcessAccess : uint

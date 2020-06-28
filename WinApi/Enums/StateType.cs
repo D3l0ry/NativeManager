@@ -1,4 +1,4 @@
-﻿namespace NativeManager.WinApi.Enums
+﻿namespace System.WinApi
 {
     public enum StateType : uint
     {

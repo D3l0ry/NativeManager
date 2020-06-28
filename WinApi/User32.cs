@@ -1,8 +1,7 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security;
 
-namespace NativeManager.WinApi
+namespace System.WinApi
 {
     [SuppressUnmanagedCodeSecurity]
     public static class User32

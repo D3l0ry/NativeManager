@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NativeManager.WinApi.Enums
+﻿namespace System.WinApi
 {
     [Flags]
     public enum FreeType

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace NativeManager.WinApi.Enums
+namespace System.WinApi
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SYSTEM_INFO
