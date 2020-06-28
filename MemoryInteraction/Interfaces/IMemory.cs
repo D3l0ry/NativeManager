@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-
-namespace NativeManager.MemoryInteraction.Interfaces
+﻿namespace System.MemoryInteraction
 {
     public interface IMemory:ISimpleMemory
     {

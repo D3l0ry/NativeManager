@@ -1,8 +1,6 @@
-﻿using System;
+﻿using System.WinApi;
 
-using NativeManager.WinApi.Enums;
-
-namespace NativeManager.MemoryInteraction.Interfaces
+namespace System.MemoryInteraction
 {
     public interface IAllocator
     {
