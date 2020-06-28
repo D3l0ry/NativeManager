@@ -1,24 +1,30 @@
-﻿using System;
-using NativeManager.MemoryInteraction.Interfaces;
-using NativeManager.WinApi;
-using NativeManager.WinApi.Enums;
+﻿using System.Diagnostics;
+using System.WinApi;
 
-namespace NativeManager.MemoryInteraction
+namespace System.MemoryInteraction
 {
-    public class Allocator : IAllocator
+    public sealed class Allocator : IAllocator
     {
-        private readonly IMemory m_Memory;
+        private readonly Process m_Process;
 
-        public Allocator(IMemory memory) => m_Memory = memory;
+        public Allocator(Process process) => m_Process = process;
 
-        public IntPtr Alloc(uint size, MemoryProtection memoryProtection = MemoryProtection.PAGE_EXECUTE_READWRITE) => Kernel32.VirtualAllocEx(m_Memory.SelectedProcess.Handle, IntPtr.Zero, size, AllocationType.MEM_COMMIT | AllocationType.MEM_RESERVE, memoryProtection);
+        public IntPtr Alloc(int size) => Kernel32.VirtualAllocEx(m_Process.Handle, IntPtr.Zero, (IntPtr)size, AllocationType.MEM_COMMIT | AllocationType.MEM_RESERVE, MemoryProtection.PAGE_EXECUTE_READWRITE);
 
-        public IntPtr Reset(IntPtr address, uint size) => Kernel32.VirtualAllocEx(m_Memory.SelectedProcess.Handle, address, size, AllocationType.MEM_RESET, MemoryProtection.PAGE_NOACCESS);
+        public IntPtr Alloc(IntPtr size) => Kernel32.VirtualAllocEx(m_Process.Handle, IntPtr.Zero, size, AllocationType.MEM_COMMIT | AllocationType.MEM_RESERVE, MemoryProtection.PAGE_EXECUTE_READWRITE);
 
-        public IntPtr Undo(IntPtr address, uint size) => Kernel32.VirtualAllocEx(m_Memory.SelectedProcess.Handle, address, size, AllocationType.MEM_RESET_UNDO, MemoryProtection.PAGE_NOACCESS);
+        public IntPtr Reset(IntPtr address, int size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, (IntPtr)size, AllocationType.MEM_RESET, MemoryProtection.PAGE_NOACCESS);
 
-        public bool Free(IntPtr address) => Kernel32.VirtualFreeEx(m_Memory.SelectedProcess.Handle, address, 0, FreeType.MEM_RELEASE);
+        public IntPtr Reset(IntPtr address, IntPtr size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, size, AllocationType.MEM_RESET, MemoryProtection.PAGE_NOACCESS);
 
-        public bool Protect(IntPtr address, uint size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Memory.SelectedProcess.Handle, address, (UIntPtr)size, protectCode, out oldProtect);
+        public IntPtr Undo(IntPtr address, int size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, (IntPtr)size, AllocationType.MEM_RESET_UNDO, MemoryProtection.PAGE_NOACCESS);
+
+        public IntPtr Undo(IntPtr address, IntPtr size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, size, AllocationType.MEM_RESET_UNDO, MemoryProtection.PAGE_NOACCESS);
+
+        public bool Free(IntPtr address) => Kernel32.VirtualFreeEx(m_Process.Handle, address, IntPtr.Zero, FreeType.MEM_RELEASE);
+
+        public bool Protect(IntPtr address, int size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Process.Handle, address, (IntPtr)size, protectCode, out oldProtect);
+
+        public bool Protect(IntPtr address, IntPtr size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Process.Handle, address, size, protectCode, out oldProtect);
     }
 }
