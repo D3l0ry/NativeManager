@@ -1,48 +1,32 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using NativeManager.MemoryInteraction.Interfaces;
-using NativeManager.ProcessInteraction;
-using NativeManager.WinApi;
-using NativeManager.WinApi.Enums;
+﻿using System.Diagnostics;
+using System.WinApi;
 
-namespace NativeManager.MemoryInteraction
+namespace System.MemoryInteraction
 {
     public class SimpleMemoryManager : ISimpleMemory
     {
-        protected readonly IntPtr m_Handle;
+        protected readonly Process m_Process;
 
-        public Process SelectedProcess { get; private set; }
-
-        public SimpleMemoryManager(Process process)
-        {
-            SelectedProcess = process;
-            m_Handle = process.Handle;
-        }
-
-        public SimpleMemoryManager(string processName, int index = 0) : this(ProcessInfo.Exists(Process.GetProcessesByName(processName), index)) { }
-
-        public SimpleMemoryManager(int processId) : this(Process.GetProcessById(processId)) { }
+        public SimpleMemoryManager(Process process) => m_Process = process;
 
         ~SimpleMemoryManager()
         {
             Dispose();
         }
 
-        public virtual byte[] ReadBytes(IntPtr address, int size)
-        {
-            byte[] buffer = new byte[size];
+        public virtual byte[] ReadBytes(IntPtr address, int size) => ReadBytes(address, (IntPtr)size);
 
-            if (Kernel32.ReadProcessMemory(m_Handle, address, buffer, size, IntPtr.Zero))
-            {
-                return buffer;
-            }
+        public virtual byte[] ReadBytes(IntPtr address, IntPtr size)
+        {
+            byte[] buffer = new byte[size.ToInt32()];
+
+            Kernel32.ReadProcessMemory(m_Process.Handle, address, buffer, size, IntPtr.Zero);
 
             return buffer;
         }
 
-        public virtual bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(m_Handle, address, buffer, buffer.Length, IntPtr.Zero);
+        public virtual bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
 
-        public void Dispose() => Kernel32.CloseHandle(m_Handle);
+        public void Dispose() => Kernel32.CloseHandle(m_Process.Handle);
     }
 }
