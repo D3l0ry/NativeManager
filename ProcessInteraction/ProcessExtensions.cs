@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-using NativeManager.MemoryInteraction;
-using NativeManager.WinApi.Enums;
+using System.MemoryInteraction;
+using System.WinApi;
 
-namespace NativeManager.ProcessInteraction
+namespace System.Diagnostics
 {
     public static class ProcessExtensions
     {
+        public static MemoryManager GetMemoryManager(this Process process) => new MemoryManager(process);
+
+        public static SimpleMemoryManager GetSimpleMemoryManager(this Process process) => new SimpleMemoryManager(process);
+
         public static ProcessModule GetModule(this Process process, string module)
         {
             if(string.IsNullOrWhiteSpace(module))
@@ -80,8 +82,6 @@ namespace NativeManager.ProcessInteraction
             return Modules;
         }
 
-        public static MemoryManager GetMemoryManager(this Process process, ProcessAccess access = ProcessAccess.ALL) => new MemoryManager(process, access);
-
-        public static SimpleMemoryManager GetSimpleMemoryManager(this Process process, ProcessAccess access = ProcessAccess.ALL) => new SimpleMemoryManager(process, access);
+        public static bool IsActiveWindow(this Process process) => process.MainWindowHandle == User32.GetForegroundWindow();
     }
 }
