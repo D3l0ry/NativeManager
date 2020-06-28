@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.WinApi;
 
-using NativeManager.MemoryInteraction.Interfaces;
-using NativeManager.WinApi;
-using NativeManager.WinApi.Enums;
-
-namespace NativeManager.MemoryInteraction
+namespace System.MemoryInteraction
 {
     public unsafe class PageManager
     {
-        private readonly IMemory m_Memory;
+        private readonly Process m_Process;
 
-        public PageManager(IMemory memory) => m_Memory = memory;
+        public PageManager(Process process) => m_Process = process;
 
         public MEMORY_BASIC_INFORMATION this[IntPtr address]
         {
@@ -92,6 +89,6 @@ namespace NativeManager.MemoryInteraction
             return systemInfo;
         }
 
-        private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(m_Memory.SelectedProcess.Handle, address, out pageInformation, (uint)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
+        private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(m_Process.Handle, address, out pageInformation, (IntPtr)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
     }
 }
