@@ -1,14 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.WinApi;
 
-using NativeManager.MemoryInteraction.Interfaces;
-using NativeManager.ProcessInteraction;
-using NativeManager.WinApi;
-using NativeManager.WinApi.Enums;
-
-namespace NativeManager.MemoryInteraction
+namespace System.MemoryInteraction
 {
     public unsafe class MemoryManager : SimpleMemoryManager, IMemory
     {
@@ -17,18 +12,13 @@ namespace NativeManager.MemoryInteraction
         private Executor m_Executor;
         private PageManager m_PageManager;
         private PatternManager m_PatternManager;
-        private ProcessInfo m_ProcessInfo;
         #endregion
 
         public MemoryManager(Process process) : base(process) { }
 
-        public MemoryManager(string processName, int index = 0) : base(processName, index) { }
-
-        public MemoryManager(int processId) : base(processId) { }
-
         #region Read and Write
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T Read<T>(IntPtr address) where T : unmanaged => Executor.ByteToStructure<T>(ReadBytes(address, Marshal.SizeOf<T>()));
+        public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(ReadBytes(address, Marshal.SizeOf<T>()));
 
         public virtual T[] Read<T>(IntPtr address, int count) where T : unmanaged
         {
@@ -45,13 +35,13 @@ namespace NativeManager.MemoryInteraction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, Executor.StructureToByte(value));
+        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, GenericsConverter.StructureToBytes(value));
         #endregion
 
         #region Operation with memory
-        public virtual bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, int count) where TArray : unmanaged
+        public virtual bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
         {
-            if (count == 0)
+            if (count == IntPtr.Zero)
             {
                 return false;
             }
@@ -61,25 +51,25 @@ namespace NativeManager.MemoryInteraction
                 throw new IndexOutOfRangeException("index is more than the length of the array");
             }
 
-            if (count > src.Length - index)
+            if (count.ToInt64() > src.Length - index)
             {
                 throw new IndexOutOfRangeException("count is more than the length of the array");
             }
 
             fixed (TArray* srcPtr = &src[index])
             {
-                return Kernel32.WriteProcessMemory(m_Handle, dst + dstOffset, (IntPtr)srcPtr, count * sizeof(TArray), IntPtr.Zero);
+                return Kernel32.WriteProcessMemory(m_Process.Handle, dst + dstOffset, (IntPtr)srcPtr, (IntPtr)(count.ToInt64() * sizeof(TArray)), IntPtr.Zero);
             }
         }
 
-        public virtual bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, int count)
+        public virtual bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, IntPtr count)
         {
-            if (count == 0)
+            if (count == IntPtr.Zero)
             {
                 return false;
             }
 
-            return Kernel32.WriteProcessMemory(m_Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
+            return Kernel32.WriteProcessMemory(m_Process.Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
         }
         #endregion
 
@@ -88,7 +78,7 @@ namespace NativeManager.MemoryInteraction
         {
             if (m_Allocator == null)
             {
-                m_Allocator = new Allocator(this);
+                m_Allocator = new Allocator(m_Process);
             }
 
             return m_Allocator;
@@ -100,7 +90,7 @@ namespace NativeManager.MemoryInteraction
         {
             if (m_Executor == null)
             {
-                m_Executor = new Executor(this);
+                m_Executor = new Executor(m_Process, this);
             }
 
             return m_Executor;
@@ -112,7 +102,7 @@ namespace NativeManager.MemoryInteraction
         {
             if (m_PageManager == null)
             {
-                m_PageManager = new PageManager(this);
+                m_PageManager = new PageManager(m_Process);
             }
 
             return m_PageManager;
@@ -124,22 +114,10 @@ namespace NativeManager.MemoryInteraction
         {
             if (m_PatternManager == null)
             {
-                m_PatternManager = new PatternManager(this);
+                m_PatternManager = new PatternManager(m_Process,this);
             }
 
             return m_PatternManager;
-        }
-        #endregion
-
-        #region Operations with process
-        public ProcessInfo GetProcessInfo()
-        {
-            if (m_ProcessInfo == null)
-            {
-                m_ProcessInfo = new ProcessInfo(SelectedProcess);
-            }
-
-            return m_ProcessInfo;
         }
         #endregion
 
