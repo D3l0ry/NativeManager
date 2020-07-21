@@ -39,24 +39,24 @@ namespace System.MemoryInteraction
         #endregion
 
         #region Operation with memory
-        public virtual bool BlockCopy<TArray>(TArray[] src, int index, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
+        public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
         {
             if (count == IntPtr.Zero)
             {
                 return false;
             }
 
-            if (index >= src.Length)
+            if (srcIndex >= src.Length)
             {
                 throw new IndexOutOfRangeException("index is more than the length of the array");
             }
 
-            if (count.ToInt64() > src.Length - index)
+            if (count.ToInt64() > src.Length - srcIndex)
             {
                 throw new IndexOutOfRangeException("count is more than the length of the array");
             }
 
-            fixed (TArray* srcPtr = &src[index])
+            fixed (TArray* srcPtr = &src[srcIndex])
             {
                 return Kernel32.WriteProcessMemory(m_Process.Handle, dst + dstOffset, (IntPtr)srcPtr, (IntPtr)(count.ToInt64() * sizeof(TArray)), IntPtr.Zero);
             }
