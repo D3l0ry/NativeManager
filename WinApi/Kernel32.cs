@@ -55,5 +55,11 @@ namespace System.WinApi
 
         [DllImport(m_KernelDll, SetLastError = true)]
         public static extern void GetSystemInfo(ref SYSTEM_INFO Info);
+
+        [DllImport(m_KernelDll, CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        [DllImport(m_KernelDll, CharSet = CharSet.Auto)]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
     }
 }
