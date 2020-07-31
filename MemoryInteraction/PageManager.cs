@@ -24,7 +24,7 @@ namespace System.MemoryInteraction
         {
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
-            if (address.ToPointer()  > systemInfo.lpMaximumApplicationAddress.ToPointer())
+            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
             {
                 throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
             }
