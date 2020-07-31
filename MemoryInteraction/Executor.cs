@@ -24,6 +24,26 @@ namespace System.MemoryInteraction
             return thread != IntPtr.Zero;
         }
 
+        public IntPtr GetFunction(string moduleName, string functionName)
+        {
+            if(string.IsNullOrWhiteSpace(moduleName))
+            {
+                throw new ArgumentNullException(nameof(moduleName));
+            }
+
+            return GetFunction(Kernel32.GetModuleHandle(moduleName), functionName);
+        }
+
+        public IntPtr GetFunction(IntPtr address, string functionName)
+        {
+            if(string.IsNullOrWhiteSpace(functionName))
+            {
+                throw new ArgumentNullException(nameof(functionName));
+            }
+
+            return Kernel32.GetProcAddress(address, functionName);
+        }
+
         public bool CallFunction(IntPtr address, ref byte[] args)
         {
             IntPtr alloc = IntPtr.Zero;
