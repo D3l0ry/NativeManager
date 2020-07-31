@@ -26,7 +26,7 @@ namespace System.MemoryInteraction
 
         public IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
         {
-            if(moduleInfo == null)
+            if (moduleInfo == null)
             {
                 throw new ArgumentNullException("moduleInfo");
             }
@@ -36,7 +36,7 @@ namespace System.MemoryInteraction
 
         public IntPtr FindPattern(ProcessModule moduleInfo, string pattern, int offset = 0) => FindPattern(moduleInfo, GetPattern(pattern), offset);
 
-        public virtual IntPtr FindPattern(IntPtr startAddress,IntPtr endAddress, byte[] pattern, int offset)
+        public virtual IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, byte[] pattern, int offset)
         {
             if (pattern == null)
             {
@@ -68,7 +68,7 @@ namespace System.MemoryInteraction
             return IntPtr.Zero;
         }
 
-        public IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, string pattern, int offset) => FindPattern(startAddress,endAddress, GetPattern(pattern), offset);
+        public IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, string pattern, int offset) => FindPattern(startAddress, endAddress, GetPattern(pattern), offset);
 
         private byte[] GetPattern(string pattern)
         {
