@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.WinApi;
@@ -14,11 +15,12 @@ namespace System.MemoryInteraction
         private PatternManager m_PatternManager;
         #endregion
 
+        #region Initialization
         public MemoryManager(Process process) : base(process) { }
+        #endregion
 
-        #region Read and Write
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(ReadBytes(address, Marshal.SizeOf<T>()));
+        public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(this[address, Marshal.SizeOf<T>()]);
 
         public virtual T[] Read<T>(IntPtr address, int count) where T : unmanaged
         {
@@ -35,10 +37,28 @@ namespace System.MemoryInteraction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, GenericsConverter.StructureToBytes(value));
-        #endregion
+        public virtual T ReadManaged<T>(IntPtr address) => GenericsConverter.BytesToManaged<T>(this[address, Marshal.SizeOf<T>()]);
 
-        #region Operation with memory
+        public virtual T[] ReadManaged<T>(IntPtr address, int count)
+        {
+            int size = Marshal.SizeOf<T>();
+
+            T[] elements = new T[count];
+
+            for (int index = 0; index < count; index++)
+            {
+                elements[index] = ReadManaged<T>(address + (index * size));
+            }
+
+            return elements;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, GenericsConverter.StructureToBytes(value));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual bool WriteManaged<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
+
         public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
         {
             if (count == IntPtr.Zero)
@@ -71,9 +91,7 @@ namespace System.MemoryInteraction
 
             return Kernel32.WriteProcessMemory(m_Process.Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
         }
-        #endregion
 
-        #region Operations with allocator
         public IAllocator GetAllocator()
         {
             if (m_Allocator == null)
@@ -83,9 +101,7 @@ namespace System.MemoryInteraction
 
             return m_Allocator;
         }
-        #endregion
 
-        #region Operations with executor
         public Executor GetExecutor()
         {
             if (m_Executor == null)
@@ -95,9 +111,7 @@ namespace System.MemoryInteraction
 
             return m_Executor;
         }
-        #endregion
 
-        #region Operations with page
         public PageManager GetPageManager()
         {
             if (m_PageManager == null)
@@ -107,22 +121,17 @@ namespace System.MemoryInteraction
 
             return m_PageManager;
         }
-        #endregion
 
-        #region Operation with pattern
         public PatternManager GetPatternManager()
         {
             if (m_PatternManager == null)
             {
-                m_PatternManager = new PatternManager(m_Process,this);
+                m_PatternManager = new PatternManager(m_Process, this);
             }
 
             return m_PatternManager;
         }
-        #endregion
 
-        #region Static methods
         public static MemoryManager GetMemoryCurrentProcess() => new MemoryManager(Process.GetCurrentProcess());
-        #endregion
     }
 }
