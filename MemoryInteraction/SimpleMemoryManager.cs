@@ -1,18 +1,19 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.WinApi;
 
 namespace System.MemoryInteraction
 {
     public class SimpleMemoryManager : ISimpleMemory
     {
-        private bool m_disposed;
         protected readonly Process m_Process;
 
         public SimpleMemoryManager(Process process) => m_Process = process;
 
         ~SimpleMemoryManager()
         {
-            Dispose(false);
+            Dispose();
         }
 
         public byte[] this[IntPtr address, IntPtr size]
@@ -38,28 +39,35 @@ namespace System.MemoryInteraction
 
         public virtual byte[] ReadBytes(IntPtr address, int size) => ReadBytes(address, (IntPtr)size);
 
+        public virtual byte[] ReadBytes(IntPtr address, Func<byte,bool> predicate)
+        {
+            List<byte> buffer = new List<byte>();
+
+            int index = 0;
+            byte element = ReadBytes(address, 1).First();
+
+            buffer.Add(element);
+
+            while (true)
+            {
+                element = ReadBytes(address + ++index, 1)[0];
+
+                if (predicate(element))
+                {
+                    break;
+                }
+
+                buffer.Add(element);
+            }
+
+            return buffer.ToArray();
+        }
+
         public virtual bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
 
         public void Dispose()
         {
-            Dispose(true);
-
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (m_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                m_Process.Dispose();
-            }
-
-            m_disposed = true;
         }
     }
 }
