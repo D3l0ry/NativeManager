@@ -149,8 +149,6 @@ namespace System.Diagnostics
         {
             if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
 
-            if (process.Modules.Count == 0) throw new InvalidOperationException("Modules equals zero.");
-
             var processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == moduleName);
 
             return processModule;
@@ -164,32 +162,9 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ProcessModule GetModule(this Process process, IntPtr hModule)
         {
-            if (process.Modules.Count == 0) throw new InvalidOperationException("Modules equals zero.");
-
             var processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == hModule);
 
             return processModule;
-        }
-
-        /// <summary>
-        /// Получает список модулей выбранного процесса
-        /// </summary>
-        /// <param name="process">Процесс, из которого нужно получить модули</param>
-        /// <returns></returns>
-        public static Dictionary<string, ProcessModule> GetModules(this Process process)
-        {
-            Dictionary<string, ProcessModule> Modules = new Dictionary<string, ProcessModule>();
-
-            if (process.Modules.Count == 0) throw new InvalidOperationException("Modules equals zero");
-
-            process.Modules.Cast<ProcessModule>().All(mdl =>
-            {
-                Modules.Add(mdl.ModuleName, mdl);
-
-                return true;
-            });
-
-            return Modules;
         }
 
         /// <summary>
@@ -201,9 +176,9 @@ namespace System.Diagnostics
         {
             Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
 
-            foreach (var module in GetModules(process))
+            foreach (ProcessModule module in process.Modules)
             {
-                Modules.Add(module.Key, module.Value.BaseAddress);
+                Modules.Add(module.ModuleName, module.BaseAddress);
             }
 
             return Modules;
