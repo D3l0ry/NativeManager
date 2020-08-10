@@ -52,10 +52,7 @@ namespace System.MemoryInteraction
             {
                 element = ReadBytes(address + ++index, 1)[0];
 
-                if (predicate(element))
-                {
-                    break;
-                }
+                if (predicate(element)) break;
 
                 buffer.Add(element);
             }
