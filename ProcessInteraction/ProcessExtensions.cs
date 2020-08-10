@@ -149,7 +149,7 @@ namespace System.Diagnostics
         {
             if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
 
-            var processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == moduleName);
+            ProcessModule processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == moduleName);
 
             return processModule;
         }
@@ -162,7 +162,7 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ProcessModule GetModule(this Process process, IntPtr hModule)
         {
-            var processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == hModule);
+            ProcessModule processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == hModule);
 
             return processModule;
         }
@@ -219,6 +219,8 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleFunctionCollection GetModuleFunctions(this Process process, string moduleName)
         {
+            if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
+
             ProcessModule module = process.GetModule(moduleName);
 
             if (module is null) throw new DllNotFoundException($"Could not find library at given address.");
