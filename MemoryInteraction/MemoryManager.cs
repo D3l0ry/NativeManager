@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.WinApi;
@@ -61,20 +60,11 @@ namespace System.MemoryInteraction
 
         public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
         {
-            if (count == IntPtr.Zero)
-            {
-                return false;
-            }
+            if (count == IntPtr.Zero) return false;
 
-            if (srcIndex >= src.Length)
-            {
-                throw new IndexOutOfRangeException("index is more than the length of the array");
-            }
+            if (srcIndex >= src.Length) throw new IndexOutOfRangeException("index is more than the length of the array");
 
-            if (count.ToInt64() > src.Length - srcIndex)
-            {
-                throw new IndexOutOfRangeException("count is more than the length of the array");
-            }
+            if (count.ToInt64() > src.Length - srcIndex) throw new IndexOutOfRangeException("count is more than the length of the array");
 
             fixed (TArray* srcPtr = &src[srcIndex])
             {
@@ -84,50 +74,35 @@ namespace System.MemoryInteraction
 
         public virtual bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, IntPtr count)
         {
-            if (count == IntPtr.Zero)
-            {
-                return false;
-            }
+            if (count == IntPtr.Zero) return false;
 
             return Kernel32.WriteProcessMemory(m_Process.Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
         }
 
         public IAllocator GetAllocator()
         {
-            if (m_Allocator == null)
-            {
-                m_Allocator = new Allocator(m_Process);
-            }
+            if (m_Allocator == null) m_Allocator = new Allocator(m_Process);
 
             return m_Allocator;
         }
 
         public Executor GetExecutor()
         {
-            if (m_Executor == null)
-            {
-                m_Executor = new Executor(m_Process, this);
-            }
+            if (m_Executor == null) m_Executor = new Executor(m_Process, this);
 
             return m_Executor;
         }
 
         public PageManager GetPageManager()
         {
-            if (m_PageManager == null)
-            {
-                m_PageManager = new PageManager(m_Process);
-            }
+            if (m_PageManager == null) m_PageManager = new PageManager(m_Process);
 
             return m_PageManager;
         }
 
         public PatternManager GetPatternManager()
         {
-            if (m_PatternManager == null)
-            {
-                m_PatternManager = new PatternManager(m_Process, this);
-            }
+            if (m_PatternManager == null) m_PatternManager = new PatternManager(m_Process, this);
 
             return m_PatternManager;
         }
