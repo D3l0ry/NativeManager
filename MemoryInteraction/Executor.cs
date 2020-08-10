@@ -24,24 +24,18 @@ namespace System.MemoryInteraction
             return thread != IntPtr.Zero;
         }
 
-        public IntPtr GetFunction(string moduleName, string functionName)
+        public static IntPtr GetFunction(IntPtr address, string functionName)
         {
-            if(string.IsNullOrWhiteSpace(moduleName))
-            {
-                throw new ArgumentNullException(nameof(moduleName));
-            }
-
-            return GetFunction(Kernel32.GetModuleHandle(moduleName), functionName);
-        }
-
-        public IntPtr GetFunction(IntPtr address, string functionName)
-        {
-            if(string.IsNullOrWhiteSpace(functionName))
-            {
-                throw new ArgumentNullException(nameof(functionName));
-            }
+            if (string.IsNullOrWhiteSpace(functionName)) throw new ArgumentNullException(nameof(functionName));
 
             return Kernel32.GetProcAddress(address, functionName);
+        }
+
+        public static IntPtr GetFunction(string moduleName, string functionName)
+        {
+            if(string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
+
+            return GetFunction(Kernel32.GetModuleHandle(moduleName), functionName);
         }
 
         public bool CallFunction(IntPtr address, ref byte[] args)
@@ -53,15 +47,9 @@ namespace System.MemoryInteraction
             {
                 alloc = m_Memory.GetAllocator().Alloc(args.Length);
 
-                if (alloc == IntPtr.Zero)
-                {
-                    return false;
-                }
+                if (alloc == IntPtr.Zero) return false;
 
-                if (!m_Memory.WriteBytes(alloc, args))
-                {
-                    return false;
-                }
+                if (!m_Memory.WriteBytes(alloc, args)) return false;
 
                 execute = Execute(address, alloc);
             }
@@ -82,15 +70,9 @@ namespace System.MemoryInteraction
             {
                 alloc = m_Memory.GetAllocator().Alloc(args.Length);
 
-                if (alloc == IntPtr.Zero)
-                {
-                    return false;
-                }
+                if (alloc == IntPtr.Zero) return false;
 
-                if (!m_Memory.WriteBytes(alloc, args))
-                {
-                    return false;
-                }
+                if (!m_Memory.WriteBytes(alloc, args)) return false;
 
                 execute = Execute(address, alloc);
             }
