@@ -24,10 +24,7 @@ namespace System.MemoryInteraction
         {
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
-            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
-            {
-                throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
-            }
+            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer()) throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
 
             return GetPage(address);
         }
@@ -36,10 +33,7 @@ namespace System.MemoryInteraction
         {
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
-            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
-            {
-                throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
-            }
+            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer()) throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
 
             return GetPages(address, systemInfo.lpMaximumApplicationAddress);
         }
@@ -53,10 +47,7 @@ namespace System.MemoryInteraction
 
         private MEMORY_BASIC_INFORMATION GetPage(IntPtr address)
         {
-            if (!VirtualQuery(address, out MEMORY_BASIC_INFORMATION pageInformation))
-            {
-                throw new Win32Exception("VirtualQuery returned zero");
-            }
+            if (!VirtualQuery(address, out MEMORY_BASIC_INFORMATION pageInformation)) throw new Win32Exception("VirtualQuery returned zero");
 
             return pageInformation;
         }
