@@ -42,15 +42,9 @@ namespace System
         /// <returns></returns>
         public static T BytesToStructure<T>(byte[] bytes) where T : unmanaged
         {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException("bytes");
-            }
+            if (bytes is null) throw new ArgumentNullException(nameof(bytes));
 
-            if (bytes.Length < Marshal.SizeOf<T>())
-            {
-                throw new ArgumentOutOfRangeException("bytes", "bytes length smaller than the size of the structure");
-            }
+            if (bytes.Length < Marshal.SizeOf<T>()) throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
 
             fixed (byte* bytesPtr = bytes)
             {
@@ -96,17 +90,11 @@ namespace System
         /// <returns></returns>
         public static T BytesToManaged<T>(byte[] bytes)
         {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException("bytes");
-            }
+            if (bytes is null) throw new ArgumentNullException(nameof(bytes));
 
             int size = Marshal.SizeOf<T>();
 
-            if (bytes.Length < size)
-            {
-                throw new ArgumentOutOfRangeException("bytes", "bytes length smaller than the size of the structure");
-            }
+            if (bytes.Length < size) throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
 
             IntPtr typePtr = Marshal.AllocHGlobal(size);
 
