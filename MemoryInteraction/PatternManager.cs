@@ -26,10 +26,7 @@ namespace System.MemoryInteraction
 
         public IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
         {
-            if (moduleInfo == null)
-            {
-                throw new ArgumentNullException("moduleInfo");
-            }
+            if (moduleInfo is null) throw new ArgumentNullException(nameof(moduleInfo));
 
             return FindPattern(moduleInfo.BaseAddress, (IntPtr)moduleInfo.ModuleMemorySize, pattern, offset);
         }
@@ -38,10 +35,7 @@ namespace System.MemoryInteraction
 
         public virtual IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, byte[] pattern, int offset)
         {
-            if (pattern == null)
-            {
-                throw new ArgumentNullException("pattern");
-            }
+            if (pattern is null) throw new ArgumentNullException(nameof(pattern));
 
             long indexMax = startAddress.ToInt64() + endAddress.ToInt64();
 
@@ -53,16 +47,10 @@ namespace System.MemoryInteraction
                 {
                     Found = pattern[MIndex] == 0 || m_Memory.Read<byte>((IntPtr)(PIndex + MIndex)) == pattern[MIndex];
 
-                    if (!Found)
-                    {
-                        break;
-                    }
+                    if (!Found) break;
                 }
 
-                if (Found)
-                {
-                    return (IntPtr)(PIndex + offset);
-                }
+                if (Found) return (IntPtr)(PIndex + offset);
             }
 
             return IntPtr.Zero;
@@ -72,10 +60,7 @@ namespace System.MemoryInteraction
 
         private byte[] GetPattern(string pattern)
         {
-            if (string.IsNullOrWhiteSpace(pattern))
-            {
-                throw new ArgumentNullException("pattern");
-            }
+            if (string.IsNullOrWhiteSpace(pattern)) throw new ArgumentNullException(nameof(pattern));
 
             List<byte> patternsBytes = new List<byte>(pattern.Length);
 
@@ -84,14 +69,8 @@ namespace System.MemoryInteraction
 
             foreach (string str in patternsStrings)
             {
-                if (str == "?")
-                {
-                    patternsBytes.Add(0);
-                }
-                else
-                {
-                    patternsBytes.Add(Convert.ToByte(str, 16));
-                }
+                if (str == "?") patternsBytes.Add(0);
+                else patternsBytes.Add(Convert.ToByte(str, 16));
             }
 
             return patternsBytes.ToArray();
