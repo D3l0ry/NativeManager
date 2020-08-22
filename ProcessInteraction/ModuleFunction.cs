@@ -1,14 +1,7 @@
 ﻿namespace System.Diagnostics
 {
-    public class ModuleFunction
+    public class ModuleFunction:ModuleAddress
     {
-        internal ModuleFunction(string name, IntPtr virtualAddress)
-        {
-            Name = name;
-            VirtualAddress = virtualAddress;
-        }
-
-        public string Name;
-        public IntPtr VirtualAddress;
+        internal ModuleFunction(string name, IntPtr virtualAddress):base(name, virtualAddress) { }
     }
 }
