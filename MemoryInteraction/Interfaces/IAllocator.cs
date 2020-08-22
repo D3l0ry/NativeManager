@@ -2,7 +2,7 @@
 
 namespace System.MemoryInteraction
 {
-    public interface IAllocator
+    public interface IAllocator:IDisposable
     {
         IntPtr Alloc(int size);
 
