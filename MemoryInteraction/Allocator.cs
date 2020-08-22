@@ -5,7 +5,7 @@ namespace System.MemoryInteraction
 {
     public sealed class Allocator : IAllocator
     {
-        private readonly Process m_Process;
+        private Process m_Process;
 
         public Allocator(Process process) => m_Process = process;
 
@@ -26,5 +26,12 @@ namespace System.MemoryInteraction
         public bool Protect(IntPtr address, int size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Process.Handle, address, (IntPtr)size, protectCode, out oldProtect);
 
         public bool Protect(IntPtr address, IntPtr size, AllocationProtect protectCode, out AllocationProtect oldProtect) => Kernel32.VirtualProtectEx(m_Process.Handle, address, size, protectCode, out oldProtect);
+
+        public void Dispose()
+        {
+            m_Process = null;
+
+            GC.SuppressFinalize(this);
+        }
     }
 }
