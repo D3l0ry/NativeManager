@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
+﻿using System.Linq;
 using System.MemoryInteraction;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -147,6 +145,8 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ProcessModule GetModule(this Process process, string moduleName)
         {
+            if (process is null) throw new ArgumentNullException(nameof(process));
+
             if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
 
             ProcessModule processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == moduleName);
@@ -162,6 +162,8 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ProcessModule GetModule(this Process process, IntPtr hModule)
         {
+            if (process is null) throw new ArgumentNullException(nameof(process));
+
             ProcessModule processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == hModule);
 
             return processModule;
@@ -172,16 +174,37 @@ namespace System.Diagnostics
         /// </summary>
         /// <param name="process">Процесс, из которого нужно получить адреса модулей</param>
         /// <returns></returns>
-        public static Dictionary<string, IntPtr> GetModulesAddress(this Process process)
+        public static ModuleAddressCollection GetModulesAddress(this Process process)
         {
-            Dictionary<string, IntPtr> Modules = new Dictionary<string, IntPtr>();
+            ProcessModuleCollection moduleCollection = process.Modules;
 
-            foreach (ProcessModule module in process.Modules)
+            ModuleAddress[] addresses = new ModuleAddress[moduleCollection.Count];
+
+            for(int index = 0; index < moduleCollection.Count; index++)
             {
-                Modules.Add(module.ModuleName, module.BaseAddress);
+                ProcessModule module = moduleCollection[index];
+
+                addresses[index] = new ModuleAddress(module.ModuleName, module.BaseAddress);
             }
 
-            return Modules;
+            return new ModuleAddressCollection(addresses);
+        }
+
+        /// <summary>
+        /// Получает список функций в модуле
+        /// </summary>
+        /// <param name="process">Выбранный процесс</param>
+        /// <param name="moduleName">Имя модуля</param>
+        /// <returns></returns>
+        public static ModuleFunctionCollection GetModuleFunctions(this Process process, string moduleName)
+        {
+            if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
+
+            ProcessModule module = process.GetModule(moduleName);
+
+            if (module is null) throw new DllNotFoundException("Could not find library at given address.");
+
+            return GetModuleFunctions(process, module.BaseAddress);
         }
 
         /// <summary>
@@ -204,28 +227,14 @@ namespace System.Diagnostics
 
                 for (int index = 0; index < exportDirectory.NumberOfNames; index++)
                 {
-                    functions[index] = new ModuleFunction(Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0)), (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4))));
+                    string functionName = Encoding.UTF8.GetString(memory[(IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0]);
+                    IntPtr functionAddress = (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4)));
+
+                    functions[index] = new ModuleFunction(functionName, functionAddress);
                 }
 
                 return new ModuleFunctionCollection(functions);
             }
-        }
-
-        /// <summary>
-        /// Получает список функций в модуле
-        /// </summary>
-        /// <param name="process">Выбранный процесс</param>
-        /// <param name="moduleName">Имя модуля</param>
-        /// <returns></returns>
-        public static ModuleFunctionCollection GetModuleFunctions(this Process process, string moduleName)
-        {
-            if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
-
-            ProcessModule module = process.GetModule(moduleName);
-
-            if (module is null) throw new DllNotFoundException($"Could not find library at given address.");
-
-            return GetModuleFunctions(process, module.BaseAddress);
         }
 
         /// <summary>
