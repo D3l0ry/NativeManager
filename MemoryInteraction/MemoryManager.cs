@@ -18,6 +18,13 @@ namespace System.MemoryInteraction
         public MemoryManager(Process process) : base(process) { }
         #endregion
 
+        #region Indexer
+        public object this[IntPtr address]
+        {
+            set => WriteManaged(address, value);
+        }
+        #endregion
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(this[address, Marshal.SizeOf<T>()]);
 
