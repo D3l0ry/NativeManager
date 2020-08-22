@@ -7,7 +7,7 @@ namespace System.MemoryInteraction
 {
     public class SimpleMemoryManager : ISimpleMemory
     {
-        protected readonly Process m_Process;
+        protected Process m_Process;
 
         public SimpleMemoryManager(Process process) => m_Process = process;
 
@@ -28,6 +28,8 @@ namespace System.MemoryInteraction
             set => WriteBytes(address, value);
         }
 
+        public byte[] this[IntPtr address, Func<byte, bool> predicate] => ReadBytes(address, predicate);
+
         public virtual byte[] ReadBytes(IntPtr address, IntPtr size)
         {
             byte[] buffer = new byte[size.ToInt32()];
@@ -44,7 +46,7 @@ namespace System.MemoryInteraction
             List<byte> buffer = new List<byte>();
 
             int index = 0;
-            byte element = ReadBytes(address, 1).First();
+            byte element = ReadBytes(address, 1)[0];
 
             buffer.Add(element);
 
@@ -64,6 +66,8 @@ namespace System.MemoryInteraction
 
         public void Dispose()
         {
+            m_Process = null;
+
             GC.SuppressFinalize(this);
         }
     }
