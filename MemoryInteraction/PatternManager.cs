@@ -6,8 +6,8 @@ namespace System.MemoryInteraction
 {
     public unsafe class PatternManager
     {
-        private readonly Process m_Process;
-        private readonly IMemory m_Memory;
+        private Process m_Process;
+        private IMemory m_Memory;
 
         public PatternManager(Process process, IMemory memory)
         {
@@ -39,18 +39,18 @@ namespace System.MemoryInteraction
 
             long indexMax = startAddress.ToInt64() + endAddress.ToInt64();
 
-            for (long PIndex = startAddress.ToInt64(); PIndex < indexMax; PIndex++)
+            for (long pIndex = startAddress.ToInt64(); pIndex < indexMax; pIndex++)
             {
                 bool Found = true;
 
                 for (int MIndex = 0; MIndex < pattern.Length; MIndex++)
                 {
-                    Found = pattern[MIndex] == 0 || m_Memory.Read<byte>((IntPtr)(PIndex + MIndex)) == pattern[MIndex];
+                    Found = pattern[MIndex] == 0 || m_Memory.Read<byte>((IntPtr)(pIndex + MIndex)) == pattern[MIndex];
 
                     if (!Found) break;
                 }
 
-                if (Found) return (IntPtr)(PIndex + offset);
+                if (Found) return (IntPtr)(pIndex + offset);
             }
 
             return IntPtr.Zero;
@@ -74,6 +74,14 @@ namespace System.MemoryInteraction
             }
 
             return patternsBytes.ToArray();
+        }
+
+        public void Dispose()
+        {
+            m_Process = null;
+            m_Memory = null;
+
+            GC.SuppressFinalize(this);
         }
     }
 }
