@@ -8,17 +8,11 @@ namespace System.MemoryInteraction
 {
     public unsafe class PageManager
     {
-        private readonly Process m_Process;
+        private Process m_Process;
 
         public PageManager(Process process) => m_Process = process;
 
-        public MEMORY_BASIC_INFORMATION this[IntPtr address]
-        {
-            get
-            {
-                return GetPageInformation(address);
-            }
-        }
+        public MEMORY_BASIC_INFORMATION this[IntPtr address] => GetPageInformation(address);
 
         public MEMORY_BASIC_INFORMATION GetPageInformation(IntPtr address)
         {
@@ -81,5 +75,12 @@ namespace System.MemoryInteraction
         }
 
         private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(m_Process.Handle, address, out pageInformation, (IntPtr)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
+
+        public void Dispose()
+        {
+            m_Process = null;
+
+            GC.SuppressFinalize(this);
+        }
     }
 }
