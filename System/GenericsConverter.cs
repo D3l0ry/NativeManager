@@ -46,35 +46,10 @@ namespace System
 
             if (bytes.Length < Marshal.SizeOf<T>()) throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
 
-            fixed (byte* bytesPtr = bytes)
+            fixed (byte* arrayPtr = bytes)
             {
-                return *(T*)bytesPtr;
+                return *(T*)arrayPtr;
             }
-        }
-
-        /// <summary>
-        /// Преобразует управляемый тип в массив байт
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="managedType">Управляемый объект</param>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <returns></returns>
-        public static byte[] ManagedToBytes<T>(T managedType)
-        {
-            if (managedType == null) throw new ArgumentNullException(nameof(managedType));
-
-            int size = Marshal.SizeOf<T>();
-            byte[] bytes = new byte[size];
-
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-
-            Marshal.StructureToPtr(managedType, handle.AddrOfPinnedObject(), true);
-
-            handle.Free();
-
-            return bytes;
         }
 
         /// <summary>
@@ -101,6 +76,17 @@ namespace System
 
             return bytes;
         }
+
+        /// <summary>
+        /// Преобразует управляемый тип в массив байт
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="managedType">Управляемый объект</param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <returns></returns>
+        public static byte[] ManagedToBytes<T>(T managedType) => ManagedToBytes(ref managedType);
 
         /// <summary>
         /// Преобразует массив байт в управляемый тип
