@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.WinApi;
@@ -114,6 +115,6 @@ namespace System.MemoryInteraction
             return m_PatternManager;
         }
 
-        public static MemoryManager GetMemoryCurrentProcess() => new MemoryManager(Process.GetCurrentProcess());
+        public static MemoryManager GetCurrentProcessMemory() => new MemoryManager(Process.GetCurrentProcess());
     }
 }
