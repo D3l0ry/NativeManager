@@ -5,6 +5,7 @@
     <Authors>D3l0ry</Authors>
     <Company>Trion Project</Company>
     <Platforms>AnyCPU;x86</Platforms>
+    <RootNamespace>System</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -35,7 +36,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <DefineConstants>WIN32</DefineConstants>
+    <DefineConstants></DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>none</DebugType>
