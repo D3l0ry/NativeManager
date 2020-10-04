@@ -174,20 +174,20 @@ namespace System.Diagnostics
         /// </summary>
         /// <param name="process">Процесс, из которого нужно получить адреса модулей</param>
         /// <returns></returns>
-        public static ModuleAddressCollection GetModulesAddress(this Process process)
+        public static ModuleInformationCollection GetModulesAddress(this Process process)
         {
             ProcessModuleCollection moduleCollection = process.Modules;
 
-            ModuleAddress[] addresses = new ModuleAddress[moduleCollection.Count];
+            ModuleInformation[] addresses = new ModuleInformation[moduleCollection.Count];
 
             for(int index = 0; index < moduleCollection.Count; index++)
             {
                 ProcessModule module = moduleCollection[index];
 
-                addresses[index] = new ModuleAddress(module.ModuleName, module.BaseAddress);
+                addresses[index] = new ModuleInformation(module.ModuleName, module.BaseAddress);
             }
 
-            return new ModuleAddressCollection(addresses);
+            return new ModuleInformationCollection(addresses);
         }
 
         /// <summary>
