@@ -1,8 +1,8 @@
 ﻿namespace System.Diagnostics
 {
-    public class ModuleAddress
+    public class ModuleInformation
     {
-        internal ModuleAddress(string name, IntPtr virtualAddress)
+        internal ModuleInformation(string name, IntPtr virtualAddress)
         {
             Name = name;
             VirtualAddress = virtualAddress;
