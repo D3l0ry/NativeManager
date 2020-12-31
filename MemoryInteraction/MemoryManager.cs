@@ -1,12 +1,9 @@
 ﻿using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.WinApi;
 
 namespace System.MemoryInteraction
 {
-    public unsafe class MemoryManager : SimpleMemoryManager, IMemory
+    public unsafe class MemoryManager : ModuleManager, IMemory
     {
         #region Private variables
         private Allocator m_Allocator;
@@ -16,55 +13,12 @@ namespace System.MemoryInteraction
         #endregion
 
         #region Initialization
-        public MemoryManager(Process process) : base(process) { }
+        public MemoryManager(Process process) : base(process, process.MainModule.ModuleName) { }
         #endregion
 
         #region Indexer
-        public object this[IntPtr address]
-        {
-            set => WriteManaged(address, value);
-        }
+        public ModuleManager this[string moduleName] => new ModuleManager(m_Process, moduleName);
         #endregion
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(this[address, Marshal.SizeOf<T>()]);
-
-        public virtual T[] Read<T>(IntPtr address, int count) where T : unmanaged
-        {
-            int size = Marshal.SizeOf<T>();
-
-            T[] elements = new T[count];
-
-            for (int index = 0; index < count; index++)
-            {
-                elements[index] = Read<T>(address + (index * size));
-            }
-
-            return elements;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T ReadManaged<T>(IntPtr address) => GenericsConverter.BytesToManaged<T>(this[address, Marshal.SizeOf<T>()]);
-
-        public virtual T[] ReadManaged<T>(IntPtr address, int count)
-        {
-            int size = Marshal.SizeOf<T>();
-
-            T[] elements = new T[count];
-
-            for (int index = 0; index < count; index++)
-            {
-                elements[index] = ReadManaged<T>(address + (index * size));
-            }
-
-            return elements;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(address, GenericsConverter.StructureToBytes(value));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool WriteManaged<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
 
         public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
         {
