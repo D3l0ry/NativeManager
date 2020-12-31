@@ -8,7 +8,7 @@ namespace System.MemoryInteraction
     {
         protected Process m_Process;
 
-        public SimpleMemoryManager(Process process) => m_Process = process;
+        internal SimpleMemoryManager(Process process) => m_Process = process;
 
         ~SimpleMemoryManager()
         {
