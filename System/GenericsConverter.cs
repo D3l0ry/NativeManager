@@ -61,7 +61,7 @@ namespace System
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
         /// <returns></returns>
-        public static byte[] ManagedToBytes<T>(ref T managedType)
+        public static byte[] ManagedToBytes<T>(T managedType)
         {
             if (managedType == null) throw new ArgumentNullException(nameof(managedType));
 
@@ -76,17 +76,6 @@ namespace System
 
             return bytes;
         }
-
-        /// <summary>
-        /// Преобразует управляемый тип в массив байт
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="managedType">Управляемый объект</param>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <returns></returns>
-        public static byte[] ManagedToBytes<T>(T managedType) => ManagedToBytes(ref managedType);
 
         /// <summary>
         /// Преобразует массив байт в управляемый тип
@@ -107,15 +96,10 @@ namespace System
 
             if (bytes.Length < size) throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
 
-            IntPtr typePtr = Marshal.AllocHGlobal(size);
-
-            Marshal.Copy(bytes, 0, typePtr, size);
-
-            T type = Marshal.PtrToStructure<T>(typePtr);
-
-            Marshal.FreeHGlobal(typePtr);
-
-            return type;
+            fixed (byte* bytePtr = bytes)
+            {
+                return Marshal.PtrToStructure<T>((IntPtr)bytePtr);
+            }
         }
     }
 }
