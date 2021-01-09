@@ -49,6 +49,10 @@ namespace System.WinApi
         public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In] IntPtr lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesWritten);
 
         [SuppressUnmanagedCodeSecurity]
+        [DllImport(m_KernelDll, SetLastError = true)]
+        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In][MarshalAs(UnmanagedType.AsAny)] object lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesWritten);
+
+        [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll)]
         public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, IntPtr dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, IntPtr dwCreationFlags, IntPtr lpThreadId);
 
