@@ -13,11 +13,13 @@ namespace System.MemoryInteraction
         #endregion
 
         #region Initialization
-        public MemoryManager(Process process) : base(process, process.MainModule.ModuleName) { }
+        public MemoryManager(Process process) : base(process, null) { }
         #endregion
 
         #region Indexer
         public ModuleManager this[string moduleName] => new ModuleManager(m_Process, moduleName);
+
+        public ModuleManager this[IntPtr modulePtr] => new ModuleManager(m_Process, modulePtr);
         #endregion
 
         public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
