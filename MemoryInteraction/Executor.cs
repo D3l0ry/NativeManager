@@ -61,7 +61,7 @@ namespace System.MemoryInteraction
             return execute;
         }
 
-        public bool CallFunction<T>(IntPtr address, ref T args) => CallFunction(address, GenericsConverter.ManagedToBytes(ref args));
+        public bool CallFunction<T>(IntPtr address, ref T args) => CallFunction(address, GenericsConverter.ManagedToBytes(args));
 
         public bool CallFunction<T>(IntPtr address, T args) => CallFunction(address, GenericsConverter.ManagedToBytes(args));
 
