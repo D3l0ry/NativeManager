@@ -8,7 +8,7 @@ namespace System.MemoryInteraction
     {
         protected Process m_Process;
 
-        internal SimpleMemoryManager(Process process) => m_Process = process;
+        public SimpleMemoryManager(Process process) => m_Process = process;
 
         ~SimpleMemoryManager()
         {
@@ -40,7 +40,7 @@ namespace System.MemoryInteraction
 
         public virtual byte[] ReadBytes(IntPtr address, int size) => ReadBytes(address, (IntPtr)size);
 
-        public virtual byte[] ReadBytes(IntPtr address, Func<byte,bool> predicate)
+        public virtual byte[] ReadBytes(IntPtr address, Func<byte, bool> predicate)
         {
             List<byte> buffer = new List<byte>();
 
