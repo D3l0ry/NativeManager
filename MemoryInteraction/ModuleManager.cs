@@ -1,31 +1,58 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.WinApi;
 
 namespace System.MemoryInteraction
 {
-    public class ModuleManager : SimpleMemoryManager,IMemory
+    public unsafe class ModuleManager : SimpleMemoryManager,IMemory
     {
         private IntPtr m_ModulePtr;
+        private ProcessModule m_SelectedModule;
 
-        internal ModuleManager(Process process, string moduleName):base(process)
+        internal ModuleManager(Process process, string moduleName) : base(process)
         {
             if (string.IsNullOrWhiteSpace(moduleName))
             {
-                throw new ArgumentNullException(nameof(moduleName));
+                m_ModulePtr = IntPtr.Zero;
+
+                return;
             }
 
-            ProcessModule selectedModule = m_Process.GetModule(moduleName);
+            m_SelectedModule = m_Process.GetModule(moduleName);
 
-            if (selectedModule is null)
+            if (m_SelectedModule is null)
             {
                 throw new NullReferenceException("Module not found");
             }
 
-            m_ModulePtr = selectedModule.BaseAddress;
+            m_ModulePtr = m_SelectedModule.BaseAddress;
         }
 
+        internal ModuleManager(Process process, IntPtr modulePtr) : base(process)
+        {
+            if(modulePtr == IntPtr.Zero)
+            {
+                m_ModulePtr = modulePtr;
+
+                return;
+            }
+
+            m_SelectedModule = m_Process.GetModule(modulePtr);
+
+            if (m_SelectedModule is null)
+            {
+                throw new NullReferenceException("Module not found");
+            }
+
+            m_ModulePtr = m_SelectedModule.BaseAddress;
+        }
+
+        public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
+
         public override byte[] ReadBytes(IntPtr address, IntPtr size) => base.ReadBytes(IntPtr.Add(m_ModulePtr, address.ToInt32()), size);
+
+        public override bool WriteBytes(IntPtr address, byte[] buffer) => base.WriteBytes(IntPtr.Add(m_ModulePtr, address.ToInt32()), buffer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(this[address, Marshal.SizeOf<T>()]);
@@ -62,7 +89,7 @@ namespace System.MemoryInteraction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => WriteBytes(IntPtr.Add(m_ModulePtr, address.ToInt32()), GenericsConverter.StructureToBytes(value));
+        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => Kernel32.WriteProcessMemory(m_Process.Handle, IntPtr.Add(m_ModulePtr, address.ToInt32()), value, (IntPtr)Marshal.SizeOf<T>(), IntPtr.Zero);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool WriteManaged<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
