@@ -3,9 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>D3l0ry</Authors>
-    <Company>Trion Project</Company>
+    <Company></Company>
     <Platforms>AnyCPU;x86</Platforms>
     <RootNamespace>System</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Библиотека для управления памятью процесса (Стороннего процесса)</Description>
+    <Copyright>D3l0ry</Copyright>
+    <PackageIcon>logoza.ru.png</PackageIcon>
+    <RepositoryUrl>https://github.com/D3l0ry/NativeManager</RepositoryUrl>
+    <PackageTags>memory, nativememory</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -44,5 +50,12 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Images\logoza.ru.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
