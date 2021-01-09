@@ -15,6 +15,8 @@ namespace System.MemoryInteraction
             m_Memory = memory;
         }
 
+        public IntPtr this[string module, string pattern] => FindPattern(module,pattern);
+
         public IntPtr FindPattern(string module, byte[] pattern, int offset = 0)
         {
             ProcessModule moduleInfo = m_Process.GetModule(module);
