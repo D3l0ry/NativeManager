@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.WinApi;
 
 namespace System.MemoryInteraction
@@ -10,16 +11,55 @@ namespace System.MemoryInteraction
         private Executor m_Executor;
         private PageManager m_PageManager;
         private PatternManager m_PatternManager;
+
+        private List<ModuleManager> m_ProcessModules;
         #endregion
 
         #region Initialization
-        public MemoryManager(Process process) : base(process, null) { }
+        public MemoryManager(Process process) : base(process, null)
+        {
+            m_ProcessModules = new List<ModuleManager>();
+        }
         #endregion
 
         #region Indexer
-        public ModuleManager this[string moduleName] => new ModuleManager(m_Process, moduleName);
+        public ModuleManager this[string moduleName]
+        {
+            get
+            {
+                ModuleManager selectedModule = m_ProcessModules.Find(X => X.ModuleName == moduleName);
 
-        public ModuleManager this[IntPtr modulePtr] => new ModuleManager(m_Process, modulePtr);
+                if(selectedModule is null)
+                {
+                    ModuleManager newModule = new ModuleManager(m_Process, moduleName);
+
+                    m_ProcessModules.Add(newModule);
+
+                    return m_ProcessModules[m_ProcessModules.Count - 1];
+                }
+
+                return selectedModule;
+            }
+        }
+
+        public ModuleManager this[IntPtr modulePtr]
+        {
+            get
+            {
+                ModuleManager selectedModule = m_ProcessModules.Find(X => X.ModulePtr == modulePtr);
+
+                if (selectedModule is null)
+                {
+                    ModuleManager newModule = new ModuleManager(m_Process, modulePtr);
+
+                    m_ProcessModules.Add(newModule);
+
+                    return m_ProcessModules[m_ProcessModules.Count - 1];
+                }
+
+                return selectedModule;
+            }
+        }
         #endregion
 
         public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
