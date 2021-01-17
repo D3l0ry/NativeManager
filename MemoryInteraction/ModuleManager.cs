@@ -31,7 +31,7 @@ namespace System.MemoryInteraction
 
         internal ModuleManager(Process process, IntPtr modulePtr) : base(process)
         {
-            if(modulePtr == IntPtr.Zero)
+            if (modulePtr == IntPtr.Zero)
             {
                 m_ModulePtr = modulePtr;
 
@@ -49,6 +49,10 @@ namespace System.MemoryInteraction
         }
 
         public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
+
+        public string ModuleName => m_SelectedModule?.ModuleName;
+
+        public IntPtr ModulePtr => m_ModulePtr;
 
         public override byte[] ReadBytes(IntPtr address, IntPtr size) => base.ReadBytes(IntPtr.Add(m_ModulePtr, address.ToInt32()), size);
 
