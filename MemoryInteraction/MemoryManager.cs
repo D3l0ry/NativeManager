@@ -12,7 +12,7 @@ namespace System.MemoryInteraction
         private PageManager m_PageManager;
         private PatternManager m_PatternManager;
 
-        private List<ModuleManager> m_ProcessModules;
+        private readonly List<ModuleManager> m_ProcessModules;
         #endregion
 
         #region Initialization
