@@ -39,9 +39,9 @@ namespace System.MemoryInteraction
             return GetPages(systemInfo.lpMinimumApplicationAddress, systemInfo.lpMaximumApplicationAddress);
         }
 
-        private MEMORY_BASIC_INFORMATION GetPage(IntPtr address)
+        private static MEMORY_BASIC_INFORMATION GetPage(Process process,IntPtr address)
         {
-            if (!VirtualQuery(address, out MEMORY_BASIC_INFORMATION pageInformation)) throw new Win32Exception("VirtualQuery returned zero");
+            if (!VirtualQuery(process,address, out MEMORY_BASIC_INFORMATION pageInformation)) throw new Win32Exception("VirtualQuery returned zero");
 
             return pageInformation;
         }
@@ -65,7 +65,7 @@ namespace System.MemoryInteraction
             return pages.ToArray();
         }
 
-        private SYSTEM_INFO GetSystemInfo()
+        private static SYSTEM_INFO GetSystemInfo()
         {
             SYSTEM_INFO systemInfo = new SYSTEM_INFO();
 
@@ -74,7 +74,16 @@ namespace System.MemoryInteraction
             return systemInfo;
         }
 
-        private bool VirtualQuery(IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(m_Process.Handle, address, out pageInformation, (IntPtr)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
+        private static bool VirtualQuery(Process process,IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(process.Handle, address, out pageInformation, (IntPtr)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
+
+        public static MEMORY_BASIC_INFORMATION GetPageInformation(Process process, IntPtr address)
+        {
+            SYSTEM_INFO systemInfo = GetSystemInfo();
+
+            if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer()) throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
+
+            return GetPage(process,address);
+        }
 
         public void Dispose()
         {
