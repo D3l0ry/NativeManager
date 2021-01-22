@@ -52,7 +52,10 @@ namespace System.MemoryInteraction
                     if (!Found) break;
                 }
 
-                if (Found) return (IntPtr)(pIndex + offset);
+                if (Found)
+                {
+                    return (IntPtr)(pIndex + offset);
+                }
             }
 
             return IntPtr.Zero;

@@ -7,11 +7,12 @@
     <Platforms>AnyCPU;x86</Platforms>
     <RootNamespace>System</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>Библиотека для управления памятью процесса (Стороннего процесса)</Description>
+    <Description>Library for managing the memory of a process (Third-party process)</Description>
     <Copyright>D3l0ry</Copyright>
     <PackageIcon>logoza.ru.png</PackageIcon>
     <RepositoryUrl>https://github.com/D3l0ry/NativeManager</RepositoryUrl>
     <PackageTags>memory, nativememory</PackageTags>
+    <Version>1.1.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
