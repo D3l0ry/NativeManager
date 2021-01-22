@@ -5,16 +5,18 @@ using System.WinApi;
 
 namespace System.MemoryInteraction
 {
-    public unsafe class ModuleManager : SimpleMemoryManager,IMemory
+    public unsafe class ModuleManager : SimpleMemoryManager, IMemory
     {
         private IntPtr m_ModulePtr;
         private ProcessModule m_SelectedModule;
+        private MEMORY_BASIC_INFORMATION m_ModulePage;
 
-        internal ModuleManager(Process process, string moduleName) : base(process)
+        internal protected ModuleManager(Process process, string moduleName) : base(process)
         {
             if (string.IsNullOrWhiteSpace(moduleName))
             {
                 m_ModulePtr = IntPtr.Zero;
+                m_ModulePage.RegionSize = IntPtr.Zero;
 
                 return;
             }
@@ -27,13 +29,16 @@ namespace System.MemoryInteraction
             }
 
             m_ModulePtr = m_SelectedModule.BaseAddress;
+
+            m_ModulePage = PageManager.GetPageInformation(process, m_ModulePtr);
         }
 
-        internal ModuleManager(Process process, IntPtr modulePtr) : base(process)
+        internal protected ModuleManager(Process process, IntPtr modulePtr) : base(process)
         {
             if (modulePtr == IntPtr.Zero)
             {
                 m_ModulePtr = modulePtr;
+                m_ModulePage.RegionSize = IntPtr.Zero;
 
                 return;
             }
@@ -46,6 +51,8 @@ namespace System.MemoryInteraction
             }
 
             m_ModulePtr = m_SelectedModule.BaseAddress;
+
+            m_ModulePage = PageManager.GetPageInformation(process, m_ModulePtr);
         }
 
         public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
@@ -54,9 +61,29 @@ namespace System.MemoryInteraction
 
         public IntPtr ModulePtr => m_ModulePtr;
 
-        public override byte[] ReadBytes(IntPtr address, IntPtr size) => base.ReadBytes(IntPtr.Add(m_ModulePtr, address.ToInt32()), size);
+        public override byte[] ReadBytes(IntPtr address, IntPtr size)
+        {
+            IntPtr newAddress = IntPtr.Add(m_ModulePtr, address.ToInt32());
 
-        public override bool WriteBytes(IntPtr address, byte[] buffer) => base.WriteBytes(IntPtr.Add(m_ModulePtr, address.ToInt32()), buffer);
+            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + size.ToInt32()).ToInt64() > m_ModulePage.RegionSize.ToInt64())
+            {
+                throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
+            }
+
+            return base.ReadBytes(newAddress, size);
+        }
+
+        public override bool WriteBytes(IntPtr address, byte[] buffer)
+        {
+            IntPtr newAddress = IntPtr.Add(m_ModulePtr, address.ToInt32());
+
+            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + buffer.Length - 1).ToInt64() > m_ModulePage.RegionSize.ToInt64())
+            {
+                throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
+            }
+
+            return base.WriteBytes(newAddress, buffer);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(this[address, Marshal.SizeOf<T>()]);
@@ -93,7 +120,18 @@ namespace System.MemoryInteraction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged => Kernel32.WriteProcessMemory(m_Process.Handle, IntPtr.Add(m_ModulePtr, address.ToInt32()), value, (IntPtr)Marshal.SizeOf<T>(), IntPtr.Zero);
+        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged
+        {
+            IntPtr newAddress = IntPtr.Add(m_ModulePtr, address.ToInt32());
+            int valueSize = Marshal.SizeOf<T>();
+
+            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + valueSize).ToInt64() > m_ModulePage.RegionSize.ToInt64())
+            {
+                throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
+            }
+
+            return Kernel32.WriteProcessMemory(m_Process.Handle, IntPtr.Add(m_ModulePtr, address.ToInt32()), value, (IntPtr)valueSize, IntPtr.Zero);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool WriteManaged<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
