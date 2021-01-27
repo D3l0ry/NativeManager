@@ -20,7 +20,7 @@ namespace System.MemoryInteraction
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer()) throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
 
-            return GetPage(address);
+            return GetPage(m_Process,address);
         }
 
         public MEMORY_BASIC_INFORMATION[] GetPagesInformation(IntPtr address)
@@ -55,7 +55,7 @@ namespace System.MemoryInteraction
 
             while (minAddress < maxAddress)
             {
-                MEMORY_BASIC_INFORMATION page = GetPage(startAddress);
+                MEMORY_BASIC_INFORMATION page = GetPage(m_Process, startAddress);
 
                 pages.Add(page);
 
