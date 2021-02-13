@@ -8,7 +8,15 @@ namespace System.MemoryInteraction
     {
         protected Process m_Process;
 
-        public SimpleMemoryManager(Process process) => m_Process = process;
+        public SimpleMemoryManager(Process process)
+        {
+            if(process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            m_Process = process;
+        }
 
         ~SimpleMemoryManager()
         {
@@ -27,7 +35,7 @@ namespace System.MemoryInteraction
             set => WriteBytes(address, value);
         }
 
-        public byte[] this[IntPtr address, Func<byte, bool> predicate] => ReadBytes(address, predicate);
+        public byte[] this[IntPtr address, Predicate<byte> predicate] => ReadBytes(address, predicate);
 
         public virtual byte[] ReadBytes(IntPtr address, IntPtr size)
         {
@@ -40,7 +48,7 @@ namespace System.MemoryInteraction
 
         public virtual byte[] ReadBytes(IntPtr address, int size) => ReadBytes(address, (IntPtr)size);
 
-        public virtual byte[] ReadBytes(IntPtr address, Func<byte, bool> predicate)
+        public virtual byte[] ReadBytes(IntPtr address, Predicate<byte> predicate)
         {
             List<byte> buffer = new List<byte>();
 

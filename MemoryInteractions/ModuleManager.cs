@@ -63,32 +63,30 @@ namespace System.MemoryInteraction
 
         public override byte[] ReadBytes(IntPtr address, IntPtr size)
         {
-            IntPtr newAddress = IntPtr.Add(m_ModulePtr, address.ToInt32());
-
-            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + size.ToInt32()).ToInt64() > m_ModulePage.RegionSize.ToInt64())
-            {
-                throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
-            }
+            IntPtr newAddress = TryGetNewAddress(address, size.ToInt32());
 
             return base.ReadBytes(newAddress, size);
         }
 
         public override bool WriteBytes(IntPtr address, byte[] buffer)
         {
-            IntPtr newAddress = IntPtr.Add(m_ModulePtr, address.ToInt32());
-
-            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + buffer.Length - 1).ToInt64() > m_ModulePage.RegionSize.ToInt64())
-            {
-                throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
-            }
+            IntPtr newAddress = TryGetNewAddress(address, buffer.Length);
 
             return base.WriteBytes(newAddress, buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T Read<T>(IntPtr address) where T : unmanaged => GenericsConverter.BytesToStructure<T>(this[address, Marshal.SizeOf<T>()]);
+        public virtual T Read<T>(IntPtr address)
+        {
+            int size = Marshal.SizeOf<T>();
 
-        public virtual T[] Read<T>(IntPtr address, int count) where T : unmanaged
+            Kernel32.ReadProcessMemory(m_Process.Handle, TryGetNewAddress(address, size), out object buffer, (IntPtr)size, IntPtr.Zero);
+
+            return (T)buffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual T[] Read<T>(IntPtr address, int count)
         {
             int size = Marshal.SizeOf<T>();
 
@@ -103,8 +101,20 @@ namespace System.MemoryInteraction
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual bool Write<T>(IntPtr address, T value)
+        {
+            int size = Marshal.SizeOf<T>();
+
+            IntPtr newAddress = TryGetNewAddress(address, size);
+
+            return Kernel32.WriteProcessMemory(m_Process.Handle, newAddress, value, (IntPtr)size, IntPtr.Zero);
+        }
+
+        [Obsolete("The method is deprecated, use Read<T>")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T ReadManaged<T>(IntPtr address) => GenericsConverter.BytesToManaged<T>(this[address, Marshal.SizeOf<T>()]);
 
+        [Obsolete("The method is deprecated, use T[] Read<T>")]
         public virtual T[] ReadManaged<T>(IntPtr address, int count)
         {
             int size = Marshal.SizeOf<T>();
@@ -119,26 +129,23 @@ namespace System.MemoryInteraction
             return elements;
         }
 
+        [Obsolete("The method is deprecated, use Write<T>")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) where T : unmanaged
+        public virtual bool WriteManaged<T>(IntPtr address, T value)
+        {
+            return WriteBytes(address, GenericsConverter.ManagedToBytes(value));
+        }
+
+        private IntPtr TryGetNewAddress(IntPtr address, int size)
         {
             IntPtr newAddress = IntPtr.Add(m_ModulePtr, address.ToInt32());
-            int valueSize = Marshal.SizeOf<T>();
 
-            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + valueSize).ToInt64() > m_ModulePage.RegionSize.ToInt64())
+            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + size).ToInt64() > m_ModulePage.RegionSize.ToInt64())
             {
                 throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
             }
 
-            return Kernel32.WriteProcessMemory(m_Process.Handle, IntPtr.Add(m_ModulePtr, address.ToInt32()), value, (IntPtr)valueSize, IntPtr.Zero);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool WriteManaged<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
-
-        IAllocator IMemory.GetAllocator()
-        {
-            throw new NotImplementedException();
+            return newAddress;
         }
     }
 }

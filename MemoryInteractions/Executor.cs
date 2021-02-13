@@ -6,12 +6,18 @@ namespace System.MemoryInteraction
     public unsafe sealed class Executor
     {
         private Process m_Process;
-        private IMemory m_Memory;
+        private IAllocator m_Allocator;
 
-        public Executor(Process process, IMemory memory)
+        public Executor(Process process)
         {
             m_Process = process;
-            m_Memory = memory;
+            m_Allocator = new Allocator(process);
+        }
+
+        public Executor(Process process,IAllocator allocator)
+        {
+            m_Process = process;
+            m_Allocator = allocator;
         }
 
         public bool Execute(IntPtr address, IntPtr args)
@@ -45,17 +51,23 @@ namespace System.MemoryInteraction
 
             try
             {
-                alloc = m_Memory.GetAllocator().Alloc(args.Length);
+                alloc = m_Allocator.Alloc(args.Length);
 
-                if (alloc == IntPtr.Zero) return execute;
+                if (alloc == IntPtr.Zero)
+                {
+                    return execute;
+                }
 
-                if (!m_Memory.WriteBytes(alloc, args)) return execute;
+                if (!m_Process.WriteBytes(address, args))
+                {
+                    return execute;
+                }
 
                 execute = Execute(address, alloc);
             }
             finally
             {
-                m_Memory.GetAllocator().Free(alloc);
+                m_Allocator.Free(alloc);
             }
 
             return execute;
@@ -68,7 +80,7 @@ namespace System.MemoryInteraction
         public void Dispose()
         {
             m_Process = null;
-            m_Memory = null;
+            m_Allocator = null;
 
             GC.SuppressFinalize(this);
         }

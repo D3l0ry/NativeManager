@@ -138,6 +138,14 @@ namespace System.Diagnostics
         }
 
         /// <summary>
+        /// Получает экземпляр класса для работы с виртуальной памятью выбранного модуля
+        /// </summary>
+        /// <param name="process">Процесс для работы с виртуальной памятью</param>
+        /// <param name="moduleName">Выбранный модуль процесса</param>
+        /// <returns></returns>
+        public static ModuleManager GetModuleManager(this Process process, string moduleName) => new ModuleManager(process, moduleName);
+
+        /// <summary>
         /// Получает модуль процесса
         /// </summary>
         /// <param name="process">Процесс, из которого нужно получить модуль</param>

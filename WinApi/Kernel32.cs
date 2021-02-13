@@ -8,17 +8,6 @@ namespace System.WinApi
     {
         private const string m_KernelDll = "kernel32.dll";
 
-        [DllImport(m_KernelDll, SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)]string lpFileName);
-
-        [DllImport(m_KernelDll, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool FreeLibrary(IntPtr hModule);
-
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(m_KernelDll, SetLastError = true)]
-        public static extern IntPtr OpenProcess(ProcessAccess processAccess, bool bInheritHandle, int processId);
-
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -39,6 +28,9 @@ namespace System.WinApi
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]
         public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesRead);
+
+        [DllImport(m_KernelDll, SetLastError = true)]
+        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out, MarshalAs(UnmanagedType.AsAny)] out object lpBuffer, IntPtr dwSize, IntPtr lpNumberOfBytesRead);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(m_KernelDll, SetLastError = true)]

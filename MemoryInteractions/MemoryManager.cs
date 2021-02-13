@@ -4,21 +4,25 @@ using System.WinApi;
 
 namespace System.MemoryInteraction
 {
-    public unsafe class MemoryManager : ModuleManager, IMemory
+    public sealed unsafe class MemoryManager : ModuleManager, IMemory
     {
         #region Private variables
-        private Allocator m_Allocator;
-        private Executor m_Executor;
-        private PageManager m_PageManager;
-        private PatternManager m_PatternManager;
+        private Lazy<Allocator> m_Allocator = new Lazy<Allocator>();
+        private Lazy<Executor> m_Executor = new Lazy<Executor>();
+        private Lazy<PageManager> m_PageManager = new Lazy<PageManager>();
+        private Lazy<PatternManager> m_PatternManager = new Lazy<PatternManager>();
 
-        private readonly List<ModuleManager> m_ProcessModules;
+        private readonly Lazy<List<ModuleManager>> m_ProcessModules = new Lazy<List<ModuleManager>>();
         #endregion
 
         #region Initialization
         public MemoryManager(Process process) : base(process, null)
         {
-            m_ProcessModules = new List<ModuleManager>();
+            m_Allocator = new Lazy<Allocator>(() => new Allocator(m_Process));
+            m_Executor = new Lazy<Executor>(() => new Executor(m_Process,GetAllocator()));
+            m_PageManager = new Lazy<PageManager>(() => new PageManager(m_Process));
+            m_PatternManager = new Lazy<PatternManager>(() => new PatternManager(m_Process, this));
+            m_ProcessModules = new Lazy<List<ModuleManager>>();
         }
         #endregion
 
@@ -27,15 +31,15 @@ namespace System.MemoryInteraction
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Find(X => X.ModuleName == moduleName);
+                ModuleManager selectedModule = m_ProcessModules.Value.Find(X => X.ModuleName == moduleName);
 
                 if(selectedModule is null)
                 {
                     ModuleManager newModule = new ModuleManager(m_Process, moduleName);
 
-                    m_ProcessModules.Add(newModule);
+                    m_ProcessModules.Value.Add(newModule);
 
-                    return m_ProcessModules[m_ProcessModules.Count - 1];
+                    return m_ProcessModules.Value[m_ProcessModules.Value.Count - 1];
                 }
 
                 return selectedModule;
@@ -46,15 +50,15 @@ namespace System.MemoryInteraction
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Find(X => X.ModulePtr == modulePtr);
+                ModuleManager selectedModule = m_ProcessModules.Value.Find(X => X.ModulePtr == modulePtr);
 
                 if (selectedModule is null)
                 {
                     ModuleManager newModule = new ModuleManager(m_Process, modulePtr);
 
-                    m_ProcessModules.Add(newModule);
+                    m_ProcessModules.Value.Add(newModule);
 
-                    return m_ProcessModules[m_ProcessModules.Count - 1];
+                    return m_ProcessModules.Value[m_ProcessModules.Value.Count - 1];
                 }
 
                 return selectedModule;
@@ -62,7 +66,7 @@ namespace System.MemoryInteraction
         }
         #endregion
 
-        public virtual bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
+        public bool BlockCopy<TArray>(TArray[] src, int srcIndex, IntPtr dst, int dstOffset, IntPtr count) where TArray : unmanaged
         {
             if (count == IntPtr.Zero) return false;
 
@@ -76,40 +80,20 @@ namespace System.MemoryInteraction
             }
         }
 
-        public virtual bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, IntPtr count)
+        public bool MemoryCopy(IntPtr src, int srcOffset, IntPtr dst, int dstOffset, IntPtr count)
         {
             if (count == IntPtr.Zero) return false;
 
             return Kernel32.WriteProcessMemory(m_Process.Handle, dst + dstOffset, src + srcOffset, count, IntPtr.Zero);
         }
 
-        public IAllocator GetAllocator()
-        {
-            if (m_Allocator == null) m_Allocator = new Allocator(m_Process);
+        public IAllocator GetAllocator() => m_Allocator.Value;
 
-            return m_Allocator;
-        }
+        public Executor GetExecutor() => m_Executor.Value;
 
-        public Executor GetExecutor()
-        {
-            if (m_Executor == null) m_Executor = new Executor(m_Process, this);
+        public PageManager GetPageManager() => m_PageManager.Value;
 
-            return m_Executor;
-        }
-
-        public PageManager GetPageManager()
-        {
-            if (m_PageManager == null) m_PageManager = new PageManager(m_Process);
-
-            return m_PageManager;
-        }
-
-        public PatternManager GetPatternManager()
-        {
-            if (m_PatternManager == null) m_PatternManager = new PatternManager(m_Process, this);
-
-            return m_PatternManager;
-        }
+        public PatternManager GetPatternManager() => m_PatternManager.Value;
 
         public static MemoryManager GetCurrentProcessMemory() => new MemoryManager(Process.GetCurrentProcess());
     }
