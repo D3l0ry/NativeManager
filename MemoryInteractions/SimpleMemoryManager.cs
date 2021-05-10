@@ -18,25 +18,6 @@ namespace System.MemoryInteraction
             m_Process = process;
         }
 
-        ~SimpleMemoryManager()
-        {
-            Dispose();
-        }
-
-        public byte[] this[IntPtr address, IntPtr size]
-        {
-            get => ReadBytes(address, size);
-            set => WriteBytes(address, value);
-        }
-
-        public byte[] this[IntPtr address, int size]
-        {
-            get => ReadBytes(address, size);
-            set => WriteBytes(address, value);
-        }
-
-        public byte[] this[IntPtr address, Predicate<byte> predicate] => ReadBytes(address, predicate);
-
         public virtual byte[] ReadBytes(IntPtr address, IntPtr size)
         {
             byte[] buffer = new byte[size.ToInt32()];
@@ -71,11 +52,6 @@ namespace System.MemoryInteraction
 
         public virtual bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
 
-        public void Dispose()
-        {
-            m_Process = null;
-
-            GC.SuppressFinalize(this);
-        }
+        public virtual bool WriteBytes(IntPtr address, sbyte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
     }
 }
