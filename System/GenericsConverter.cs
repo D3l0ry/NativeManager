@@ -68,11 +68,10 @@ namespace System
             int size = Marshal.SizeOf<T>();
             byte[] bytes = new byte[size];
 
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-
-            Marshal.StructureToPtr(managedType, handle.AddrOfPinnedObject(), true);
-
-            handle.Free();
+            fixed (byte* bytePtr = bytes)
+            {
+                Marshal.StructureToPtr(managedType, (IntPtr)bytePtr, true);
+            }
 
             return bytes;
         }
