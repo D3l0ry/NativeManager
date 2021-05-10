@@ -84,12 +84,5 @@ namespace System.MemoryInteraction
 
             return GetPage(process,address);
         }
-
-        public void Dispose()
-        {
-            m_Process = null;
-
-            GC.SuppressFinalize(this);
-        }
     }
 }

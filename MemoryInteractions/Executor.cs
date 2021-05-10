@@ -6,18 +6,10 @@ namespace System.MemoryInteraction
     public unsafe sealed class Executor
     {
         private Process m_Process;
-        private IAllocator m_Allocator;
 
         public Executor(Process process)
         {
             m_Process = process;
-            m_Allocator = new Allocator(process);
-        }
-
-        public Executor(Process process,IAllocator allocator)
-        {
-            m_Process = process;
-            m_Allocator = allocator;
         }
 
         public bool Execute(IntPtr address, IntPtr args)
@@ -42,47 +34,6 @@ namespace System.MemoryInteraction
             if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
 
             return GetFunction(Kernel32.GetModuleHandle(moduleName), functionName);
-        }
-
-        public bool CallFunction(IntPtr address, byte[] args)
-        {
-            IntPtr alloc = IntPtr.Zero;
-            bool execute = false;
-
-            try
-            {
-                alloc = m_Allocator.Alloc(args.Length);
-
-                if (alloc == IntPtr.Zero)
-                {
-                    return execute;
-                }
-
-                if (!m_Process.WriteBytes(address, args))
-                {
-                    return execute;
-                }
-
-                execute = Execute(address, alloc);
-            }
-            finally
-            {
-                m_Allocator.Free(alloc);
-            }
-
-            return execute;
-        }
-
-        public bool CallFunction<T>(IntPtr address, ref T args) => CallFunction(address, GenericsConverter.ManagedToBytes(args));
-
-        public bool CallFunction<T>(IntPtr address, T args) => CallFunction(address, GenericsConverter.ManagedToBytes(args));
-
-        public void Dispose()
-        {
-            m_Process = null;
-            m_Allocator = null;
-
-            GC.SuppressFinalize(this);
         }
     }
 }

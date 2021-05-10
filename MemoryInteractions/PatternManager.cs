@@ -80,13 +80,5 @@ namespace System.MemoryInteraction
 
             return patternsBytes.ToArray();
         }
-
-        public void Dispose()
-        {
-            m_Process = null;
-            m_Memory = null;
-
-            GC.SuppressFinalize(this);
-        }
     }
 }
