@@ -188,7 +188,7 @@ namespace System.Diagnostics
 
             ModuleInformation[] addresses = new ModuleInformation[moduleCollection.Count];
 
-            for(int index = 0; index < moduleCollection.Count; index++)
+            for (int index = 0; index < moduleCollection.Count; index++)
             {
                 ProcessModule module = moduleCollection[index];
 
@@ -223,26 +223,25 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleFunctionCollection GetModuleFunctions(this Process process, IntPtr hModule)
         {
-            using (MemoryManager memory = process.GetMemoryManager())
+            MemoryManager memory = process.GetMemoryManager();
+
+            IMAGE_DOS_HEADER dosHeader = memory.Read<IMAGE_DOS_HEADER>(hModule);
+
+            IMAGE_NT_HEADERS ntHeader = memory.Read<IMAGE_NT_HEADERS>(hModule + dosHeader.e_lfanew);
+
+            IMAGE_EXPORT_DIRECTORY exportDirectory = memory.Read<IMAGE_EXPORT_DIRECTORY>(hModule + ntHeader.OptionalHeader.DataDirectory[0].VirtualAddress);
+
+            ModuleFunction[] functions = new ModuleFunction[exportDirectory.NumberOfNames];
+
+            for (int index = 0; index < exportDirectory.NumberOfNames; index++)
             {
-                IMAGE_DOS_HEADER dosHeader = memory.Read<IMAGE_DOS_HEADER>(hModule);
+                string functionName = Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0));
+                IntPtr functionAddress = (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4)));
 
-                IMAGE_NT_HEADERS ntHeader = memory.Read<IMAGE_NT_HEADERS>(hModule + dosHeader.e_lfanew);
-
-                IMAGE_EXPORT_DIRECTORY exportDirectory = memory.Read<IMAGE_EXPORT_DIRECTORY>(hModule + ntHeader.OptionalHeader.DataDirectory[0].VirtualAddress);
-
-                ModuleFunction[] functions = new ModuleFunction[exportDirectory.NumberOfNames];
-
-                for (int index = 0; index < exportDirectory.NumberOfNames; index++)
-                {
-                    string functionName = Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0));
-                    IntPtr functionAddress = (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4)));
-
-                    functions[index] = new ModuleFunction(functionName, functionAddress);
-                }
-
-                return new ModuleFunctionCollection(functions);
+                functions[index] = new ModuleFunction(functionName, functionAddress);
             }
+
+            return new ModuleFunctionCollection(functions);
         }
 
         /// <summary>
