@@ -227,7 +227,7 @@ namespace System.Diagnostics
             {
                 IMAGE_DOS_HEADER dosHeader = memory.Read<IMAGE_DOS_HEADER>(hModule);
 
-                IMAGE_NT_HEADERS ntHeader = memory.ReadManaged<IMAGE_NT_HEADERS>(hModule + dosHeader.e_lfanew);
+                IMAGE_NT_HEADERS ntHeader = memory.Read<IMAGE_NT_HEADERS>(hModule + dosHeader.e_lfanew);
 
                 IMAGE_EXPORT_DIRECTORY exportDirectory = memory.Read<IMAGE_EXPORT_DIRECTORY>(hModule + ntHeader.OptionalHeader.DataDirectory[0].VirtualAddress);
 
@@ -235,7 +235,7 @@ namespace System.Diagnostics
 
                 for (int index = 0; index < exportDirectory.NumberOfNames; index++)
                 {
-                    string functionName = Encoding.UTF8.GetString(memory[(IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0]);
+                    string functionName = Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0));
                     IntPtr functionAddress = (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4)));
 
                     functions[index] = new ModuleFunction(functionName, functionAddress);
