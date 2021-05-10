@@ -1,6 +1,6 @@
 ﻿namespace System.MemoryInteraction
 {
-    public interface IMemory:ISimpleMemory
+    public interface IMemory
     {
         T Read<T>(IntPtr address);
 

@@ -1,6 +1,6 @@
 ﻿namespace System.MemoryInteraction
 {
-    public interface ISimpleMemory:IDisposable
+    public interface ISimpleMemory
     {
         byte[] ReadBytes(IntPtr address, int size);
 
