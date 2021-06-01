@@ -42,12 +42,5 @@ namespace System.MemoryInteraction
         public AllocationProtect Protect(IntPtr address, int size, AllocationProtect protectCode) => Protect(address, (IntPtr)size, protectCode);
 
         public AllocationProtect Protect<T>(IntPtr address, AllocationProtect protectCode) => Protect(address, Marshal.SizeOf<T>(), protectCode);
-
-        public void Dispose()
-        {
-            m_Process = null;
-
-            GC.SuppressFinalize(this);
-        }
     }
 }
