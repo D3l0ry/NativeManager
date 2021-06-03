@@ -38,7 +38,7 @@ namespace System.MemoryInteraction
         {
             if (string.IsNullOrWhiteSpace(functionName)) throw new ArgumentNullException(nameof(functionName));
 
-            return Kernel32.GetProcAddress(address, functionName);
+            return Kernel32.GetProcAddress(moduleAddress, functionName);
         }
 
         /// <summary>
