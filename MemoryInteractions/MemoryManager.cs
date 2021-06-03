@@ -4,6 +4,9 @@ using System.Diagnostics;
 
 namespace System.MemoryInteraction
 {
+    /// <summary>
+    /// Класс для работы с виртуальной памятью всего процесса
+    /// </summary>
     public sealed unsafe class MemoryManager : ModuleManager, IMemory
     {
         #region Private variables
@@ -18,6 +21,10 @@ namespace System.MemoryInteraction
         #endregion
 
         #region Indexer
+        /// <summary>
+        /// Получает объект класса ModuleManager для работы с адресами выбранного модуля
+        /// </summary>
+        /// <value></value>
         public ModuleManager this[string moduleName]
         {
             get
@@ -37,6 +44,10 @@ namespace System.MemoryInteraction
             }
         }
 
+        /// <summary>
+        /// Получает объект класса ModuleManager для работы с адресами выбранного модуля
+        /// </summary>
+        /// <value></value>
         public ModuleManager this[IntPtr modulePtr]
         {
             get
@@ -57,6 +68,10 @@ namespace System.MemoryInteraction
         }
         #endregion
 
+        /// <summary>
+        /// Получает объект класса для работы с памятью текущего процесса
+        /// </summary>
+        /// <returns></returns>
         public static MemoryManager GetCurrentProcessMemory() => new MemoryManager(Process.GetCurrentProcess());
     }
 }

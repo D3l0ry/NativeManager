@@ -5,6 +5,9 @@ using System.WinApi;
 
 namespace System.MemoryInteraction
 {
+    /// <summary>
+    /// Предоставляет доступ к адресам выбранного модуля
+    /// </summary>
     public unsafe class ModuleManager : SimpleMemoryManager, IMemory
     {
         private readonly IntPtr m_Address;
@@ -74,9 +77,22 @@ namespace System.MemoryInteraction
             return base.WriteBytes(newAddress, buffer);
         }
 
+        /// <summary>
+        /// Читает данные по определенному адресу и преобразует их в выбранный тип
+        /// </summary>
+        /// <param name="address">Адрес, с которого нужно начать чтение</param>
+        /// <typeparam name="T">Тип, в который нужно преобразовать массив байт</typeparam>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address) => GenericsConverter.BytesToManaged<T>(ReadBytes(address, Marshal.SizeOf<T>()));
-
+        
+        /// <summary>
+        /// Читает данные по определенному адресу и преобразует их в массив элементов выбранного типа
+        /// </summary>
+        /// <param name="address">Адрес, с которого нужно начать чтение</param>
+        /// <param name="count">Колисчество элементов для чтения</param>
+        /// <typeparam name="T">Тип, в который нужно преобразовать массив байт</typeparam>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T[] Read<T>(IntPtr address, int count)
         {
@@ -92,6 +108,13 @@ namespace System.MemoryInteraction
             return elements;
         }
 
+        /// <summary>
+        /// Записывает данные по определенному адресу
+        /// </summary>
+        /// <param name="address">Адрес, с которого нужно начать чтение</param>
+        /// <param name="value">Значение, которое нужно записать</param>
+        /// <typeparam name="T">Тип значения, которое нужно записать</typeparam>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool Write<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
 
