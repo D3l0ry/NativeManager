@@ -14,7 +14,7 @@ namespace System.MemoryInteraction
         #endregion
 
         #region Initialization
-        public MemoryManager(Process process) : base(process, null)
+        public MemoryManager(Process process) : base(process, IntPtr.Zero)
         {
             m_ProcessModules = new Lazy<List<ModuleManager>>();
         }

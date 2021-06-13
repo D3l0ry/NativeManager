@@ -49,14 +49,43 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         public IntPtr Alloc(IntPtr size, AllocationType allocationType, MemoryProtection memoryProtection) => Kernel32.VirtualAllocEx(m_Process.Handle, IntPtr.Zero, size, allocationType, memoryProtection);
 
+        /// <summary>
+        /// Указывает, что данные в диапазоне памяти, указанном address и size, больше не представляют интереса
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public IntPtr Reset(IntPtr address, int size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, (IntPtr)size, AllocationType.MEM_RESET, MemoryProtection.PAGE_NOACCESS);
 
+        /// <summary>
+        /// Указывает, что данные в диапазоне памяти, указанном address и size, больше не представляют интереса
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public IntPtr Reset(IntPtr address, IntPtr size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, size, AllocationType.MEM_RESET, MemoryProtection.PAGE_NOACCESS);
 
+        /// <summary>
+        /// Указывает на то, что данные в указанном диапазоне памяти, заданном lpAddress и dwSize, представляют интерес для вызывающего абонента и пытаются обратить вспять эффекты MEM_RESET
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public IntPtr Undo(IntPtr address, int size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, (IntPtr)size, AllocationType.MEM_RESET_UNDO, MemoryProtection.PAGE_NOACCESS);
 
+        /// <summary>
+        /// Указывает на то, что данные в указанном диапазоне памяти, заданном lpAddress и dwSize, представляют интерес для вызывающего абонента и пытаются обратить вспять эффекты MEM_RESET
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public IntPtr Undo(IntPtr address, IntPtr size) => Kernel32.VirtualAllocEx(m_Process.Handle, address, size, AllocationType.MEM_RESET_UNDO, MemoryProtection.PAGE_NOACCESS);
 
+        /// <summary>
+        /// Освобождает выделенную память
+        /// </summary>
+        /// <param name="address"></param>
+        /// <returns></returns>
         public bool Free(IntPtr address) => Kernel32.VirtualFreeEx(m_Process.Handle, address, IntPtr.Zero, FreeType.MEM_RELEASE);
 
         /// <summary>
@@ -83,7 +112,7 @@ namespace System.MemoryInteraction
         public AllocationProtect Protect(IntPtr address, int size, AllocationProtect protectCode) => Protect(address, (IntPtr)size, protectCode);
 
         /// <summary>
-        /// 
+        /// Изменяет права определенного участка памяти
         /// </summary>
         /// <param name="address">Адрес с которого нужно изменить права</param>
         /// <param name="protectCode">Новые права для блока памяти</param>

@@ -31,7 +31,7 @@ namespace System.MemoryInteraction
         /// <summary>
         /// Получает адрес функции
         /// </summary>
-        /// <param name="address">Адрес модуля, в котором находится функция</param>
+        /// <param name="moduleAddress">Адрес модуля, в котором находится функция</param>
         /// <param name="functionName">Имя функции</param>
         /// <returns></returns>
         public static IntPtr GetFunction(IntPtr moduleAddress, string functionName)

@@ -12,13 +12,12 @@ namespace System.MemoryInteraction
     {
         private readonly IntPtr m_Address;
         private ProcessModule m_SelectedModule;
-        private MEMORY_BASIC_INFORMATION m_ModulePage;
 
         internal protected ModuleManager(Process process, string moduleName) :base(process)
         {
             if (string.IsNullOrWhiteSpace(moduleName))
             {
-                m_ModulePage.RegionSize = IntPtr.Zero;
+                m_Address = IntPtr.Zero;
 
                 return;
             }
@@ -31,8 +30,6 @@ namespace System.MemoryInteraction
             }
 
             m_Address = m_SelectedModule.BaseAddress;
-
-            m_ModulePage = PageManager.GetPageInformation(process, m_Address);
         }
 
         internal protected ModuleManager(Process process, IntPtr modulePtr) : base(process)
@@ -40,7 +37,6 @@ namespace System.MemoryInteraction
             if (modulePtr == IntPtr.Zero)
             {
                 m_Address = modulePtr;
-                m_ModulePage.RegionSize = IntPtr.Zero;
 
                 return;
             }
@@ -53,8 +49,6 @@ namespace System.MemoryInteraction
             }
 
             m_Address = m_SelectedModule.BaseAddress;
-
-            m_ModulePage = PageManager.GetPageInformation(process, m_Address);
         }
 
         public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
@@ -85,12 +79,12 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address) => GenericsConverter.BytesToManaged<T>(ReadBytes(address, Marshal.SizeOf<T>()));
-        
+
         /// <summary>
         /// Читает данные по определенному адресу и преобразует их в массив элементов выбранного типа
         /// </summary>
         /// <param name="address">Адрес, с которого нужно начать чтение</param>
-        /// <param name="count">Колисчество элементов для чтения</param>
+        /// <param name="count">Количество  элементов для чтения</param>
         /// <typeparam name="T">Тип, в который нужно преобразовать массив байт</typeparam>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -113,21 +107,26 @@ namespace System.MemoryInteraction
         /// </summary>
         /// <param name="address">Адрес, с которого нужно начать чтение</param>
         /// <param name="value">Значение, которое нужно записать</param>
-        /// <typeparam name="T">Тип значения, которое нужно записать</typeparam>
+        /// <typeparam name="T">значение, которое нужно записать</typeparam>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool Write<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
 
         private IntPtr TryGetNewAddress(IntPtr address, int size)
         {
-            IntPtr newAddress = IntPtr.Add(m_Address, address.ToInt32());
-
-            if (m_ModulePage.RegionSize != IntPtr.Zero && (newAddress + size).ToInt64() > m_ModulePage.RegionSize.ToInt64())
+            if (m_SelectedModule != null)
             {
-                throw new ArgumentOutOfRangeException(nameof(address), "Exceeding the limits of the allocated memory of the module");
+                IntPtr newAddress = IntPtr.Add(m_Address, address.ToInt32());
+
+                if (((newAddress + size).ToInt64() > (m_Address + m_SelectedModule.ModuleMemorySize).ToInt64()))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(address), $"Exceeding the limits of the allocated memory of the module");
+                }
+
+                return newAddress;
             }
 
-            return newAddress;
+            return address;
         }
     }
 }

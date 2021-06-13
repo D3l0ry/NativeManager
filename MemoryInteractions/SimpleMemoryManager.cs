@@ -25,7 +25,7 @@ namespace System.MemoryInteraction
         /// Читает массив байт по определенному адресу
         /// </summary>
         /// <param name="address">Адрес с которого начать чтение</param>
-        /// <param name="size">Колличество считываемых байт</param>
+        /// <param name="size">Количество считываемых байт</param>
         /// <returns></returns>
         public virtual byte[] ReadBytes(IntPtr address, IntPtr size)
         {

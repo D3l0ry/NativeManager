@@ -12,9 +12,9 @@
     <PackageIcon>logoza.ru.png</PackageIcon>
     <RepositoryUrl>https://github.com/D3l0ry/NativeManager</RepositoryUrl>
     <PackageTags>memory, nativememory</PackageTags>
-    <Version>1.3.0</Version>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <FileVersion>1.3.0.0</FileVersion>
+    <Version>1.5.0.1</Version>
+    <AssemblyVersion>1.5.0.1</AssemblyVersion>
+    <FileVersion>1.5.0.1</FileVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
@@ -32,9 +32,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>false</Optimize>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug</OutputPath>
+    <DocumentationFile>bin\Debug\NativeManager.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -47,13 +48,14 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <DefineConstants></DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>x86</PlatformTarget>
-    <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>bin\Release\NativeManager.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

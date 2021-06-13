@@ -5,7 +5,7 @@ using System.Linq;
 namespace System.MemoryInteraction
 {
     /// <summary>
-    /// Предоставляет функции получения адреса по определенному паттерну
+    /// Предоставляет функции для получения адреса по определенному паттерну
     /// </summary>
     public unsafe class PatternManager
     {
@@ -50,7 +50,7 @@ namespace System.MemoryInteraction
         /// <summary>
         /// Получает адрес по определенному паттерну
         /// </summary>
-        /// <param name="ProcessModule">Модуль процесса</param>
+        /// <param name="moduleInfo">Модуль процесса</param>
         /// <param name="pattern">Паттерн</param>
         /// <param name="offset">Смещение, добавляемое после поиска</param>
         /// <returns></returns>
@@ -64,7 +64,7 @@ namespace System.MemoryInteraction
         /// <summary>
         /// Получает адрес по определенному паттерну
         /// </summary>
-        /// <param name="ProcessModule">Модуль процесса</param>
+        /// <param name="moduleInfo">Модуль процесса</param>
         /// <param name="pattern">Паттерн</param>
         /// <param name="offset">Смещение, добавляемое после поиска</param>
         /// <returns></returns>
