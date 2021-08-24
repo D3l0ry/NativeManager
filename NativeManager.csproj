@@ -12,9 +12,9 @@
     <PackageIcon>logoza.ru.png</PackageIcon>
     <RepositoryUrl>https://github.com/D3l0ry/NativeManager</RepositoryUrl>
     <PackageTags>memory, nativememory</PackageTags>
-    <Version>1.5.0.1</Version>
-    <AssemblyVersion>1.5.0.1</AssemblyVersion>
-    <FileVersion>1.5.0.1</FileVersion>
+    <Version>1.5.0.5</Version>
+    <AssemblyVersion>1.5.0.5</AssemblyVersion>
+    <FileVersion>1.5.0.5</FileVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 

@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.WinApi;
 
 namespace System.MemoryInteraction
 {
@@ -10,45 +9,13 @@ namespace System.MemoryInteraction
     /// </summary>
     public unsafe class ModuleManager : SimpleMemoryManager, IMemory
     {
-        private readonly IntPtr m_Address;
-        private ProcessModule m_SelectedModule;
+        protected readonly IntPtr m_Address;
+        private readonly ProcessModule m_SelectedModule;
 
-        internal protected ModuleManager(Process process, string moduleName) :base(process)
+        protected internal ModuleManager(Process process, ProcessModule selectedModule) : base(process)
         {
-            if (string.IsNullOrWhiteSpace(moduleName))
-            {
-                m_Address = IntPtr.Zero;
-
-                return;
-            }
-
-            m_SelectedModule = m_Process.GetModule(moduleName);
-
-            if (m_SelectedModule is null)
-            {
-                throw new NullReferenceException("Module not found");
-            }
-
-            m_Address = m_SelectedModule.BaseAddress;
-        }
-
-        internal protected ModuleManager(Process process, IntPtr modulePtr) : base(process)
-        {
-            if (modulePtr == IntPtr.Zero)
-            {
-                m_Address = modulePtr;
-
-                return;
-            }
-
-            m_SelectedModule = m_Process.GetModule(modulePtr);
-
-            if (m_SelectedModule is null)
-            {
-                throw new NullReferenceException("Module not found");
-            }
-
-            m_Address = m_SelectedModule.BaseAddress;
+            m_SelectedModule = selectedModule;
+            m_Address = selectedModule.BaseAddress;
         }
 
         public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
@@ -112,7 +79,7 @@ namespace System.MemoryInteraction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool Write<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
 
-        private IntPtr TryGetNewAddress(IntPtr address, int size)
+        protected virtual IntPtr TryGetNewAddress(IntPtr address, int size)
         {
             if (m_SelectedModule != null)
             {

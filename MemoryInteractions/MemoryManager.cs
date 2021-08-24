@@ -1,6 +1,6 @@
-﻿using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace System.MemoryInteraction
 {
@@ -10,11 +10,11 @@ namespace System.MemoryInteraction
     public sealed unsafe class MemoryManager : ModuleManager, IMemory
     {
         #region Private variables
-        private readonly Lazy<List<ModuleManager>> m_ProcessModules = new Lazy<List<ModuleManager>>();
+        private readonly Lazy<List<ModuleManager>> m_ProcessModules;
         #endregion
 
         #region Initialization
-        public MemoryManager(Process process) : base(process, IntPtr.Zero)
+        public MemoryManager(Process process) : base(process, process.MainModule)
         {
             m_ProcessModules = new Lazy<List<ModuleManager>>();
         }
@@ -29,11 +29,18 @@ namespace System.MemoryInteraction
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Value.Find(X => X.ModuleName == moduleName);
+                ModuleManager selectedModule = m_ProcessModules.Value.FirstOrDefault(X => X.ModuleName == moduleName);
 
-                if(selectedModule is null)
+                if (selectedModule is null)
                 {
-                    ModuleManager newModule = new ModuleManager(m_Process, moduleName);
+                    ProcessModule module = m_Process.GetModule(moduleName);
+
+                    if (module is null)
+                    {
+                        throw new NullReferenceException("Модуль процесса не найден!");
+                    }
+
+                    ModuleManager newModule = new ModuleManager(m_Process, module);
 
                     m_ProcessModules.Value.Add(newModule);
 
@@ -52,11 +59,18 @@ namespace System.MemoryInteraction
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Value.Find(X => X.ModulePtr == modulePtr);
+                ModuleManager selectedModule = m_ProcessModules.Value.FirstOrDefault(X => X.ModulePtr == modulePtr);
 
                 if (selectedModule is null)
                 {
-                    ModuleManager newModule = new ModuleManager(m_Process, modulePtr);
+                    ProcessModule module = m_Process.GetModule(modulePtr);
+
+                    if (module is null)
+                    {
+                        throw new NullReferenceException("Модуль процесса не найден!");
+                    }
+
+                    ModuleManager newModule = new ModuleManager(m_Process, module);
 
                     m_ProcessModules.Value.Add(newModule);
 
@@ -67,6 +81,8 @@ namespace System.MemoryInteraction
             }
         }
         #endregion
+
+        protected override IntPtr TryGetNewAddress(IntPtr address, int size) => address;
 
         /// <summary>
         /// Получает объект класса для работы с памятью текущего процесса
