@@ -3,6 +3,7 @@ using System.MemoryInteraction;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.WinApi;
+using System;
 
 namespace System.Diagnostics
 {
@@ -11,23 +12,23 @@ namespace System.Diagnostics
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct IMAGE_DOS_HEADER
         {
-            short e_magic;
-            short e_cblp;
-            short e_cp;
-            short e_crlc;
-            short e_cparhdr;
-            short e_minalloc;
-            short e_maxalloc;
-            short e_ss;
-            short e_sp;
-            short e_csum;
-            short e_ip;
-            short e_cs;
-            short e_lfarlc;
-            short e_ovno;
+            readonly short e_magic;
+            readonly short e_cblp;
+            readonly short e_cp;
+            readonly short e_crlc;
+            readonly short e_cparhdr;
+            readonly short e_minalloc;
+            readonly short e_maxalloc;
+            readonly short e_ss;
+            readonly short e_sp;
+            readonly short e_csum;
+            readonly short e_ip;
+            readonly short e_cs;
+            readonly short e_lfarlc;
+            readonly short e_ovno;
             fixed short e_res[4];
-            short e_oemid;
-            short e_oeminfo;
+            readonly short e_oemid;
+            readonly short e_oeminfo;
             fixed short e_res2[10];
             public short e_lfanew;
         }
@@ -35,56 +36,56 @@ namespace System.Diagnostics
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct IMAGE_NT_HEADERS
         {
-            int Signature;
-            IMAGE_FILE_HEADER FileHeader;
+            readonly int Signature;
+            readonly IMAGE_FILE_HEADER FileHeader;
             public IMAGE_OPTIONAL_HEADER OptionalHeader;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct IMAGE_FILE_HEADER
         {
-            short Machine;
-            short NumberOfSections;
-            int TimeDataStamp;
-            int PointerToSymbolTable;
-            int NumberOfSymbols;
-            short SizeOfOptionalHeader;
-            short Characteristics;
+            readonly short Machine;
+            readonly short NumberOfSections;
+            readonly int TimeDataStamp;
+            readonly int PointerToSymbolTable;
+            readonly int NumberOfSymbols;
+            readonly short SizeOfOptionalHeader;
+            readonly short Characteristics;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct IMAGE_OPTIONAL_HEADER
         {
-            short Magic;
-            byte MajorLinkedVersion;
-            byte MinorLinkedVersion;
-            int SizeOfCode;
-            int SizeOfInitializedData;
-            int SizeOfUInitializedData;
-            int AddressOfEntryPoint;
-            int BaseOfCode;
-            int BaseOfData;
-            int ImageBase;
-            int SectionAlignment;
-            int FileAlignment;
-            short MajorOperatingSystemVersion;
-            short MinororOperatingSystemVersion;
-            short MajorImageVersion;
-            short MinorImageVersion;
-            short MajorSubsystemVersion;
-            short MinorSubsystemVersion;
-            int Win32VersionValue;
-            int SizeOfImage;
-            int SizeOfHeaders;
-            int CheckSum;
-            short Subsystem;
-            short DllCharacteristics;
-            int SizeOfStackReverse;
-            int SizeOfStackCommit;
-            int SizeOfHeapReserve;
-            int SizeOfHeapCommit;
-            int LoaderFlags;
-            int NumberOfRvaAndSizes;
+            readonly short Magic;
+            readonly byte MajorLinkedVersion;
+            readonly byte MinorLinkedVersion;
+            readonly int SizeOfCode;
+            readonly int SizeOfInitializedData;
+            readonly int SizeOfUInitializedData;
+            readonly int AddressOfEntryPoint;
+            readonly int BaseOfCode;
+            readonly int BaseOfData;
+            readonly int ImageBase;
+            readonly int SectionAlignment;
+            readonly int FileAlignment;
+            readonly short MajorOperatingSystemVersion;
+            readonly short MinororOperatingSystemVersion;
+            readonly short MajorImageVersion;
+            readonly short MinorImageVersion;
+            readonly short MajorSubsystemVersion;
+            readonly short MinorSubsystemVersion;
+            readonly int Win32VersionValue;
+            readonly int SizeOfImage;
+            readonly int SizeOfHeaders;
+            readonly int CheckSum;
+            readonly short Subsystem;
+            readonly short DllCharacteristics;
+            readonly int SizeOfStackReverse;
+            readonly int SizeOfStackCommit;
+            readonly int SizeOfHeapReserve;
+            readonly int SizeOfHeapCommit;
+            readonly int LoaderFlags;
+            readonly int NumberOfRvaAndSizes;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
             public IMAGE_DATA_DIRECTORY[] DataDirectory;
@@ -100,12 +101,12 @@ namespace System.Diagnostics
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct IMAGE_EXPORT_DIRECTORY
         {
-            int Characteristics;
-            int TimeDateStamp;
-            short MajorVersion;
-            short MinorVersion;
-            int Name;
-            int Base;
+            readonly int Characteristics;
+            readonly int TimeDateStamp;
+            readonly short MajorVersion;
+            readonly short MinorVersion;
+            readonly int Name;
+            readonly int Base;
             public int NumberOfFunctions;
             public int NumberOfNames;
             public int AddressOfFunctions;
@@ -143,7 +144,17 @@ namespace System.Diagnostics
         /// <param name="process">Процесс для работы с виртуальной памятью</param>
         /// <param name="moduleName">Выбранный модуль процесса</param>
         /// <returns></returns>
-        public static ModuleManager GetModuleManager(this Process process, string moduleName) => new ModuleManager(process, moduleName);
+        public static ModuleManager GetModuleManager(this Process process, string moduleName)
+        {
+            ProcessModule selectedModule = process.GetModule(moduleName);
+
+            if (selectedModule is null)
+            {
+                throw new NullReferenceException("Модуль процесса не найден!");
+            }
+
+            return new ModuleManager(process, selectedModule);
+        }
 
         /// <summary>
         /// Получает модуль процесса
@@ -235,9 +246,8 @@ namespace System.Diagnostics
 
             for (int index = 0; index < exportDirectory.NumberOfNames; index++)
             {
-                string functionName = Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0));
+                string functionName = Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0).ToArray());
                 IntPtr functionAddress = (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4)));
-
                 functions[index] = new ModuleFunction(functionName, functionAddress);
             }
 

@@ -9,7 +9,7 @@ namespace System.MemoryInteraction
     /// </summary>
     public sealed class Allocator
     {
-        private Process m_Process;
+        private readonly Process m_Process;
 
         public Allocator(Process process) => m_Process = process;
 

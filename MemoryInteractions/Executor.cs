@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using System.WinApi;
+using System;
 
 namespace System.MemoryInteraction
 {
-    public unsafe sealed class Executor
+    public sealed unsafe class Executor
     {
-        private Process m_Process;
+        private readonly Process m_Process;
 
         public Executor(Process process)
         {

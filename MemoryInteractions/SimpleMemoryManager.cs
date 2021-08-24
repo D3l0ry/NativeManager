@@ -13,14 +13,14 @@ namespace System.MemoryInteraction
 
         public SimpleMemoryManager(Process process)
         {
-            if(process is null)
+            if (process is null)
             {
                 throw new ArgumentNullException(nameof(process));
             }
 
             m_Process = process;
         }
-        
+
         /// <summary>
         /// Читает массив байт по определенному адресу
         /// </summary>
@@ -50,7 +50,7 @@ namespace System.MemoryInteraction
         /// <param name="address">Адрес с которого начать чтение</param>
         /// <param name="predicate">Заканчивает чтение по достижению указанного условия</param>
         /// <returns></returns>
-        public virtual byte[] ReadBytes(IntPtr address, Predicate<byte> predicate)
+        public virtual IEnumerable<byte> ReadBytes(IntPtr address, Predicate<byte> predicate)
         {
             List<byte> buffer = new List<byte>();
 
@@ -68,7 +68,7 @@ namespace System.MemoryInteraction
                 buffer.Add(element);
             }
 
-            return buffer.ToArray();
+            return buffer;
         }
 
         /// <summary>

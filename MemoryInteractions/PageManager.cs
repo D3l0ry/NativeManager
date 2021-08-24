@@ -8,7 +8,7 @@ namespace System.MemoryInteraction
 {
     public unsafe class PageManager
     {
-        private Process m_Process;
+        private readonly Process m_Process;
 
         public PageManager(Process process) => m_Process = process;
 
@@ -20,7 +20,7 @@ namespace System.MemoryInteraction
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer()) throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
 
-            return GetPage(m_Process,address);
+            return GetPage(m_Process, address);
         }
 
         public MEMORY_BASIC_INFORMATION[] GetPagesInformation(IntPtr address)
@@ -39,9 +39,9 @@ namespace System.MemoryInteraction
             return GetPages(systemInfo.lpMinimumApplicationAddress, systemInfo.lpMaximumApplicationAddress);
         }
 
-        private static MEMORY_BASIC_INFORMATION GetPage(Process process,IntPtr address)
+        private static MEMORY_BASIC_INFORMATION GetPage(Process process, IntPtr address)
         {
-            if (!VirtualQuery(process,address, out MEMORY_BASIC_INFORMATION pageInformation)) throw new Win32Exception("VirtualQuery returned zero");
+            if (!VirtualQuery(process, address, out MEMORY_BASIC_INFORMATION pageInformation)) throw new Win32Exception("VirtualQuery returned zero");
 
             return pageInformation;
         }
@@ -74,7 +74,7 @@ namespace System.MemoryInteraction
             return systemInfo;
         }
 
-        private static bool VirtualQuery(Process process,IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(process.Handle, address, out pageInformation, (IntPtr)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
+        private static bool VirtualQuery(Process process, IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation) => Kernel32.VirtualQueryEx(process.Handle, address, out pageInformation, (IntPtr)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>()) != 0 ? true : false;
 
         public static MEMORY_BASIC_INFORMATION GetPageInformation(Process process, IntPtr address)
         {
@@ -82,7 +82,7 @@ namespace System.MemoryInteraction
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer()) throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
 
-            return GetPage(process,address);
+            return GetPage(process, address);
         }
     }
 }

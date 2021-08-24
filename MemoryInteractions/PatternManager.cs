@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace System.MemoryInteraction
@@ -9,8 +9,8 @@ namespace System.MemoryInteraction
     /// </summary>
     public unsafe class PatternManager
     {
-        private Process m_Process;
-        private IMemory m_Memory;
+        private readonly Process m_Process;
+        private readonly IMemory m_Memory;
 
         public PatternManager(Process process, IMemory memory)
         {
@@ -22,7 +22,7 @@ namespace System.MemoryInteraction
         /// Получает адрес по определенному паттерну
         /// </summary>
         /// <returns></returns>
-        public IntPtr this[string moduleName, string pattern] => FindPattern(moduleName,pattern);
+        public IntPtr this[string moduleName, string pattern] => FindPattern(moduleName, pattern);
 
         /// <summary>
         /// Получает адрес по определенному паттерну

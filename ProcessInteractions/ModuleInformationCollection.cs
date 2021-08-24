@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Diagnostics
 {
-    public class ModuleInformationCollection :ReadOnlyCollectionBase
+    public class ModuleInformationCollection : ReadOnlyCollectionBase
     {
         public ModuleInformationCollection(ModuleInformation[] moduleAddresses) => InnerList.AddRange(moduleAddresses);
 
