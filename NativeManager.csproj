@@ -16,6 +16,9 @@
     <AssemblyVersion>1.5.0.5</AssemblyVersion>
     <FileVersion>1.5.0.5</FileVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <ApplicationIcon />
+    <Win32Resource />
+    <PackageIconUrl />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -55,11 +58,12 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\NativeManager.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
+    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\Images\logoza.ru.png">
+    <None Include="..\..\Images\logoza.ru.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

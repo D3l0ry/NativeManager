@@ -2,27 +2,28 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace System.MemoryInteraction
+namespace System.MemoryInteractions
 {
     /// <summary>
     /// Предоставляет доступ к адресам выбранного модуля
     /// </summary>
-    public unsafe class ModuleManager : SimpleMemoryManager, IMemory
+    public unsafe class ModuleManager : SimpleMemoryManager
     {
-        protected readonly IntPtr m_Address;
         private readonly ProcessModule m_SelectedModule;
 
         protected internal ModuleManager(Process process, ProcessModule selectedModule) : base(process)
         {
+            if (selectedModule is null)
+            {
+                throw new ArgumentNullException(nameof(selectedModule));
+            }
+
             m_SelectedModule = selectedModule;
-            m_Address = selectedModule.BaseAddress;
         }
 
         public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
 
-        public string ModuleName => m_SelectedModule?.ModuleName;
-
-        public IntPtr ModulePtr => m_Address;
+        public ProcessModule Module => m_SelectedModule;
 
         public override byte[] ReadBytes(IntPtr address, IntPtr size)
         {
@@ -45,7 +46,12 @@ namespace System.MemoryInteraction
         /// <typeparam name="T">Тип, в который нужно преобразовать массив байт</typeparam>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T Read<T>(IntPtr address) => GenericsConverter.BytesToManaged<T>(ReadBytes(address, Marshal.SizeOf<T>()));
+        public virtual T Read<T>(IntPtr address)
+        {
+            byte[] bytes = ReadBytes(address, Marshal.SizeOf<T>());
+
+            return GenericsConverter.BytesToManaged<T>(bytes);
+        }
 
         /// <summary>
         /// Читает данные по определенному адресу и преобразует их в массив элементов выбранного типа
@@ -81,19 +87,21 @@ namespace System.MemoryInteraction
 
         protected virtual IntPtr TryGetNewAddress(IntPtr address, int size)
         {
-            if (m_SelectedModule != null)
+            IntPtr newAddress = IntPtr.Add(m_SelectedModule.BaseAddress, address.ToInt32());
+            long newAddressAddSize = (newAddress + size).ToInt64();
+            long maxAddress = (m_SelectedModule.BaseAddress + m_SelectedModule.ModuleMemorySize).ToInt64();
+
+            if (newAddress.ToInt64() < m_SelectedModule.BaseAddress.ToInt64())
             {
-                IntPtr newAddress = IntPtr.Add(m_Address, address.ToInt32());
-
-                if (((newAddress + size).ToInt64() > (m_Address + m_SelectedModule.ModuleMemorySize).ToInt64()))
-                {
-                    throw new ArgumentOutOfRangeException(nameof(address), $"Exceeding the limits of the allocated memory of the module");
-                }
-
-                return newAddress;
+                throw new OutOfMemoryException("Указанный адрес меньше адреса базового адреса модуля");
             }
 
-            return address;
+            if (newAddressAddSize > maxAddress)
+            {
+                throw new OutOfMemoryException("Указанный адрес больше максимального адреса модуля");
+            }
+
+            return newAddress;
         }
     }
 }

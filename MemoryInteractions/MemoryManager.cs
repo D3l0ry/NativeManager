@@ -2,25 +2,17 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace System.MemoryInteraction
+namespace System.MemoryInteractions
 {
     /// <summary>
     /// Класс для работы с виртуальной памятью всего процесса
     /// </summary>
-    public sealed unsafe class MemoryManager : ModuleManager, IMemory
+    public sealed unsafe class MemoryManager : ModuleManager
     {
-        #region Private variables
         private readonly Lazy<List<ModuleManager>> m_ProcessModules;
-        #endregion
 
-        #region Initialization
-        public MemoryManager(Process process) : base(process, process.MainModule)
-        {
-            m_ProcessModules = new Lazy<List<ModuleManager>>();
-        }
-        #endregion
+        public MemoryManager(Process process) : base(process, process.MainModule) => m_ProcessModules = new Lazy<List<ModuleManager>>();
 
-        #region Indexer
         /// <summary>
         /// Получает объект класса ModuleManager для работы с адресами выбранного модуля
         /// </summary>
@@ -29,7 +21,8 @@ namespace System.MemoryInteraction
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Value.FirstOrDefault(X => X.ModuleName == moduleName);
+                ModuleManager selectedModule = m_ProcessModules.Value
+                    .FirstOrDefault(currentModule => currentModule.Module.ModuleName == moduleName);
 
                 if (selectedModule is null)
                 {
@@ -59,7 +52,8 @@ namespace System.MemoryInteraction
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Value.FirstOrDefault(X => X.ModulePtr == modulePtr);
+                ModuleManager selectedModule = m_ProcessModules.Value
+                    .FirstOrDefault(currentModule => currentModule.Module.BaseAddress == modulePtr);
 
                 if (selectedModule is null)
                 {
@@ -80,7 +74,6 @@ namespace System.MemoryInteraction
                 return selectedModule;
             }
         }
-        #endregion
 
         protected override IntPtr TryGetNewAddress(IntPtr address, int size) => address;
 
@@ -88,6 +81,11 @@ namespace System.MemoryInteraction
         /// Получает объект класса для работы с памятью текущего процесса
         /// </summary>
         /// <returns></returns>
-        public static MemoryManager GetCurrentProcessMemory() => new MemoryManager(Process.GetCurrentProcess());
+        public static MemoryManager GetCurrentProcessMemory()
+        {
+            Process currentProcess = Process.GetCurrentProcess();
+
+            return new MemoryManager(currentProcess);
+        }
     }
 }

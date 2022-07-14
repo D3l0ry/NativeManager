@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using System;
 
 namespace System
 {
@@ -43,9 +42,15 @@ namespace System
         /// <returns></returns>
         public static T BytesToStructure<T>(byte[] bytes) where T : unmanaged
         {
-            if (bytes is null) throw new ArgumentNullException(nameof(bytes));
+            if (bytes is null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
 
-            if (bytes.Length < Marshal.SizeOf<T>()) throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
+            if (bytes.Length < Marshal.SizeOf<T>())
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
+            }
 
             fixed (byte* arrayPtr = bytes)
             {
@@ -64,7 +69,10 @@ namespace System
         /// <returns></returns>
         public static byte[] ManagedToBytes<T>(T managedType)
         {
-            if (managedType == null) throw new ArgumentNullException(nameof(managedType));
+            if (managedType == null)
+            {
+                throw new ArgumentNullException(nameof(managedType));
+            }
 
             int size = Marshal.SizeOf<T>();
             byte[] bytes = new byte[size];
@@ -78,7 +86,7 @@ namespace System
         }
 
         /// <summary>
-        /// Преобразует массив байт в управляемый тип
+        /// Преобразует массив байт в управляемый тип (С неуправляемыми переменными)
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="bytes">Массив байт</param>
@@ -90,11 +98,17 @@ namespace System
         /// <returns></returns>
         public static T BytesToManaged<T>(byte[] bytes)
         {
-            if (bytes is null) throw new ArgumentNullException(nameof(bytes));
+            if (bytes is null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
 
             int size = Marshal.SizeOf<T>();
 
-            if (bytes.Length < size) throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
+            if (bytes.Length < size)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
+            }
 
             fixed (byte* bytePtr = bytes)
             {

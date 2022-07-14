@@ -1,9 +1,8 @@
 ﻿using System.Linq;
-using System.MemoryInteraction;
+using System.MemoryInteractions;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.WinApi;
-using System;
 
 namespace System.Diagnostics
 {
@@ -121,7 +120,10 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static SimpleMemoryManager GetSimpleMemoryManager(this Process process)
         {
-            if (process is null) throw new ArgumentNullException(nameof(process));
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
 
             return new SimpleMemoryManager(process);
         }
@@ -133,7 +135,10 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static MemoryManager GetMemoryManager(this Process process)
         {
-            if (process is null) throw new ArgumentNullException(nameof(process));
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
 
             return new MemoryManager(process);
         }
@@ -157,6 +162,25 @@ namespace System.Diagnostics
         }
 
         /// <summary>
+        /// Получает экземпляр класса для работы со страницами процесса
+        /// </summary>
+        /// <param name="process"></param>
+        /// <returns></returns>
+        public static PageManager GetPageManager(this Process process) => new PageManager(process);
+
+        /// <summary>
+        /// Получает экземпляр класса для работы с паттернами
+        /// </summary>
+        /// <param name="process"></param>
+        /// <returns></returns>
+        public static PatternManager GetPatternManager(this Process process)
+        {
+            MemoryManager memoryManager = process.GetMemoryManager();
+
+            return new PatternManager(process, memoryManager);
+        }
+
+        /// <summary>
         /// Получает модуль процесса
         /// </summary>
         /// <param name="process">Процесс, из которого нужно получить модуль</param>
@@ -164,11 +188,20 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ProcessModule GetModule(this Process process, string moduleName)
         {
-            if (process is null) throw new ArgumentNullException(nameof(process));
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
 
-            if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
 
-            ProcessModule processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.ModuleName == moduleName);
+            if (string.IsNullOrWhiteSpace(moduleName))
+            {
+                throw new ArgumentNullException(nameof(moduleName));
+            }
+
+            ProcessModule processModule = process.Modules
+                .Cast<ProcessModule>()
+                .FirstOrDefault(currentModule => currentModule.ModuleName == moduleName);
 
             return processModule;
         }
@@ -181,9 +214,14 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ProcessModule GetModule(this Process process, IntPtr hModule)
         {
-            if (process is null) throw new ArgumentNullException(nameof(process));
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
 
-            ProcessModule processModule = process.Modules.Cast<ProcessModule>().FirstOrDefault(mdl => mdl.BaseAddress == hModule);
+            ProcessModule processModule = process.Modules
+                .Cast<ProcessModule>()
+                .FirstOrDefault(currentModule => currentModule.BaseAddress == hModule);
 
             return processModule;
         }
@@ -217,11 +255,17 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleFunctionCollection GetModuleFunctions(this Process process, string moduleName)
         {
-            if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
+            if (string.IsNullOrWhiteSpace(moduleName))
+            {
+                throw new ArgumentNullException(nameof(moduleName));
+            }
 
             ProcessModule module = process.GetModule(moduleName);
 
-            if (module is null) throw new DllNotFoundException("Could not find library at given address.");
+            if (module is null)
+            {
+                throw new DllNotFoundException("Could not find library at given address.");
+            }
 
             return GetModuleFunctions(process, module.BaseAddress);
         }
@@ -242,13 +286,42 @@ namespace System.Diagnostics
 
             IMAGE_EXPORT_DIRECTORY exportDirectory = memory.Read<IMAGE_EXPORT_DIRECTORY>(hModule + ntHeader.OptionalHeader.DataDirectory[0].VirtualAddress);
 
-            ModuleFunction[] functions = new ModuleFunction[exportDirectory.NumberOfNames];
+            ModuleInformation[] functions = new ModuleInformation[exportDirectory.NumberOfNames];
 
             for (int index = 0; index < exportDirectory.NumberOfNames; index++)
             {
                 string functionName = Encoding.UTF8.GetString(memory.ReadBytes((IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfNames + index * 0x4))), X => X == 0).ToArray());
+
                 IntPtr functionAddress = (IntPtr)((uint)hModule + (uint)memory.Read<IntPtr>(hModule + (exportDirectory.AddressOfFunctions + index * 0x4)));
-                functions[index] = new ModuleFunction(functionName, functionAddress);
+
+                functions[index] = new ModuleInformation(functionName, functionAddress);
+            }
+
+            return new ModuleFunctionCollection(functions);
+        }
+
+        public static ModuleFunctionCollection GetModuleFunctions(this ModuleManager moduleManager)
+        {
+            IntPtr moduleAddress = moduleManager.Module.BaseAddress;
+
+            IMAGE_DOS_HEADER dosHeader = moduleManager.Read<IMAGE_DOS_HEADER>(moduleAddress);
+
+            IMAGE_NT_HEADERS ntHeader = moduleManager.Read<IMAGE_NT_HEADERS>(moduleAddress + dosHeader.e_lfanew);
+
+            IMAGE_EXPORT_DIRECTORY exportDirectory = moduleManager.Read<IMAGE_EXPORT_DIRECTORY>(moduleAddress + ntHeader.OptionalHeader.DataDirectory[0].VirtualAddress);
+
+            ModuleInformation[] functions = new ModuleInformation[exportDirectory.NumberOfNames];
+
+            for (int index = 0; index < exportDirectory.NumberOfNames; index++)
+            {
+                byte[] functionNameBytes = moduleManager
+                    .ReadBytes((IntPtr)((uint)moduleAddress + (uint)moduleManager.Read<IntPtr>(moduleAddress + (exportDirectory.AddressOfNames + index * 0x4))), X => X != 0);
+
+                string functionName = Encoding.UTF8.GetString(functionNameBytes);
+
+                IntPtr functionAddress = (IntPtr)((uint)moduleAddress + (uint)moduleManager.Read<IntPtr>(moduleAddress + (exportDirectory.AddressOfFunctions + index * 0x4)));
+
+                functions[index] = new ModuleInformation(functionName, functionAddress);
             }
 
             return new ModuleFunctionCollection(functions);

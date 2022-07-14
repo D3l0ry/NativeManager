@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.WinApi;
 
-namespace System.MemoryInteraction
+namespace System.MemoryInteractions
 {
     /// <summary>
     /// Предоставляет доступ к выделению и управлению правами виртуальной памяти процесса
@@ -11,7 +11,15 @@ namespace System.MemoryInteraction
     {
         private readonly Process m_Process;
 
-        public Allocator(Process process) => m_Process = process;
+        public Allocator(Process process)
+        {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            m_Process = process;
+        }
 
         /// <summary>
         /// Выделяет память и получает указатель на выделенную память

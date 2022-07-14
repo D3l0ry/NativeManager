@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics;
 using System.WinApi;
-using System;
 
-namespace System.MemoryInteraction
+namespace System.MemoryInteractions
 {
     public sealed unsafe class Executor
     {
@@ -10,6 +9,11 @@ namespace System.MemoryInteraction
 
         public Executor(Process process)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
             m_Process = process;
         }
 
@@ -37,7 +41,10 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         public static IntPtr GetFunction(IntPtr moduleAddress, string functionName)
         {
-            if (string.IsNullOrWhiteSpace(functionName)) throw new ArgumentNullException(nameof(functionName));
+            if (string.IsNullOrWhiteSpace(functionName))
+            {
+                throw new ArgumentNullException(nameof(functionName));
+            }
 
             return Kernel32.GetProcAddress(moduleAddress, functionName);
         }
@@ -50,9 +57,14 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         public static IntPtr GetFunction(string moduleName, string functionName)
         {
-            if (string.IsNullOrWhiteSpace(moduleName)) throw new ArgumentNullException(nameof(moduleName));
+            if (string.IsNullOrWhiteSpace(moduleName))
+            {
+                throw new ArgumentNullException(nameof(moduleName));
+            }
 
-            return GetFunction(Kernel32.GetModuleHandle(moduleName), functionName);
+            IntPtr moduleAddress = Kernel32.GetModuleHandle(moduleName);
+
+            return GetFunction(moduleAddress, functionName);
         }
     }
 }

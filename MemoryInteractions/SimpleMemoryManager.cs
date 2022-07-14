@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.WinApi;
 
-namespace System.MemoryInteraction
+namespace System.MemoryInteractions
 {
     /// <summary>
     /// Предоставляет доступ к чтению и записи виртуальной памяти процесса
     /// </summary>
-    public class SimpleMemoryManager : ISimpleMemory
+    public class SimpleMemoryManager
     {
         protected Process m_Process;
 
@@ -50,25 +50,25 @@ namespace System.MemoryInteraction
         /// <param name="address">Адрес с которого начать чтение</param>
         /// <param name="predicate">Заканчивает чтение по достижению указанного условия</param>
         /// <returns></returns>
-        public virtual IEnumerable<byte> ReadBytes(IntPtr address, Predicate<byte> predicate)
+        public virtual byte[] ReadBytes(IntPtr address, Predicate<byte> predicate)
         {
             List<byte> buffer = new List<byte>();
 
-            int index = 0;
-            byte element = ReadBytes(address, 1)[0];
-
-            buffer.Add(element);
-
             while (true)
             {
-                element = ReadBytes(address + ++index, 1)[0];
+                byte element = ReadBytes(address, 1)[0];
 
-                if (predicate(element)) break;
+                if (!predicate(element))
+                {
+                    break;
+                }
+
+                address += 1;
 
                 buffer.Add(element);
             }
 
-            return buffer;
+            return buffer.ToArray();
         }
 
         /// <summary>
@@ -78,13 +78,5 @@ namespace System.MemoryInteraction
         /// <param name="buffer">Массив байт, которые нужно записать</param>
         /// <returns></returns>
         public virtual bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
-
-        /// <summary>
-        /// Записывает массив байт по указанному адресу
-        /// </summary>
-        /// <param name="address">Адрес с которого начать запись</param>
-        /// <param name="buffer">Массив байт, которые нужно записать</param>
-        /// <returns></returns>
-        public virtual bool WriteBytes(IntPtr address, sbyte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
     }
 }

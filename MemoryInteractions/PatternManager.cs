@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace System.MemoryInteraction
+namespace System.MemoryInteractions
 {
     /// <summary>
     /// Предоставляет функции для получения адреса по определенному паттерну
@@ -10,10 +10,22 @@ namespace System.MemoryInteraction
     public unsafe class PatternManager
     {
         private readonly Process m_Process;
-        private readonly IMemory m_Memory;
+        private readonly MemoryManager m_Memory;
 
-        public PatternManager(Process process, IMemory memory)
+        public PatternManager(Process process) : this(process, process.GetMemoryManager()) { }
+
+        public PatternManager(Process process, MemoryManager memory)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            if (memory is null)
+            {
+                throw new ArgumentNullException(nameof(memory));
+            }
+
             m_Process = process;
             m_Memory = memory;
         }
@@ -56,7 +68,10 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         public IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
         {
-            if (moduleInfo is null) throw new ArgumentNullException(nameof(moduleInfo));
+            if (moduleInfo is null)
+            {
+                throw new ArgumentNullException(nameof(moduleInfo));
+            }
 
             return FindPattern(moduleInfo.BaseAddress, (IntPtr)moduleInfo.ModuleMemorySize, pattern, offset);
         }
@@ -80,7 +95,10 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         public virtual IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, byte[] pattern, int offset)
         {
-            if (pattern is null) throw new ArgumentNullException(nameof(pattern));
+            if (pattern is null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
 
             long indexMax = startAddress.ToInt64() + endAddress.ToInt64();
 
@@ -92,7 +110,10 @@ namespace System.MemoryInteraction
                 {
                     Found = pattern[MIndex] == 0 || m_Memory.Read<byte>((IntPtr)(pIndex + MIndex)) == pattern[MIndex];
 
-                    if (!Found) break;
+                    if (!Found)
+                    {
+                        break;
+                    }
                 }
 
                 if (Found)
@@ -121,7 +142,10 @@ namespace System.MemoryInteraction
         /// <returns></returns>
         private byte[] GetPattern(string pattern)
         {
-            if (string.IsNullOrWhiteSpace(pattern)) throw new ArgumentNullException(nameof(pattern));
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
 
             List<byte> patternsBytes = new List<byte>(pattern.Length);
 
@@ -130,8 +154,14 @@ namespace System.MemoryInteraction
 
             foreach (string str in patternsStrings)
             {
-                if (str == "?") patternsBytes.Add(0);
-                else patternsBytes.Add(Convert.ToByte(str, 16));
+                if (str == "?")
+                {
+                    patternsBytes.Add(0);
+                }
+                else
+                {
+                    patternsBytes.Add(Convert.ToByte(str, 16));
+                }
             }
 
             return patternsBytes.ToArray();
