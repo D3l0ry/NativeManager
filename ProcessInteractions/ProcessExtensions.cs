@@ -162,6 +162,20 @@ namespace System.Diagnostics
         }
 
         /// <summary>
+        /// Получает экземпляр класса для работы с виртуальной памятью
+        /// </summary>
+        /// <param name="process"></param>
+        /// <returns></returns>
+        public static Allocator GetAllocator(this Process process) => new Allocator(process);
+
+        /// <summary>
+        /// Получает экземпляр класса для выполнения кода процесса
+        /// </summary>
+        /// <param name="process"></param>
+        /// <returns></returns>
+        public static Executor GetExecutor(this Process process) => new Executor(process);
+
+        /// <summary>
         /// Получает экземпляр класса для работы со страницами процесса
         /// </summary>
         /// <param name="process"></param>
@@ -300,6 +314,11 @@ namespace System.Diagnostics
             return new ModuleFunctionCollection(functions);
         }
 
+        /// <summary>
+        /// Получает список функций в модуле
+        /// </summary>
+        /// <param name="moduleManager"></param>
+        /// <returns></returns>
         public static ModuleFunctionCollection GetModuleFunctions(this ModuleManager moduleManager)
         {
             IntPtr moduleAddress = moduleManager.Module.BaseAddress;
@@ -325,6 +344,36 @@ namespace System.Diagnostics
             }
 
             return new ModuleFunctionCollection(functions);
+        }
+
+        /// <summary>
+        /// Вызывает Exception определенного типа с сообщением и заполненным словарем с информацией об указанном адресе в памяти
+        /// </summary>
+        /// <typeparam name="TException"></typeparam>
+        /// <param name="process"></param>
+        /// <param name="address"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        internal static TException ShowException<TException>(this Process process,IntPtr address, string message) where TException : Exception
+        {
+            TException exception = typeof(TException)
+                .GetConstructor(new Type[] { typeof(string) })
+                .Invoke(new object[] { message }) as TException;
+
+            PageManager pageManager = process.GetPageManager();
+
+            MEMORY_BASIC_INFORMATION pageInformation = pageManager.GetPageInformation(address);
+
+            exception.Data.Add("Process", process.ProcessName);
+            exception.Data.Add("Address", address);
+            exception.Data.Add("BaseAddress", pageInformation.BaseAddress);
+            exception.Data.Add("AllocationProtect", pageInformation.AllocationProtect);
+            exception.Data.Add("RegionSize", pageInformation.RegionSize);
+            exception.Data.Add("StateType", pageInformation.State);
+            exception.Data.Add("Protect", pageInformation.Protect);
+            exception.Data.Add("MemoryType", pageInformation.Type);
+
+            return exception;
         }
 
         /// <summary>

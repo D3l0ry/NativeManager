@@ -21,22 +21,20 @@ namespace System.MemoryInteractions
             m_SelectedModule = selectedModule;
         }
 
-        public static implicit operator ProcessModule(ModuleManager moduleManager) => moduleManager.m_SelectedModule;
-
         public ProcessModule Module => m_SelectedModule;
 
-        public override byte[] ReadBytes(IntPtr address, IntPtr size)
+        public override byte[] ReadBytes(IntPtr address, uint size)
         {
-            IntPtr newAddress = TryGetNewAddress(address, size.ToInt32());
+            IntPtr newAddress = TryGetNewAddress(address, size);
 
             return base.ReadBytes(newAddress, size);
         }
 
-        public override bool WriteBytes(IntPtr address, byte[] buffer)
+        public override void WriteBytes(IntPtr address, byte[] buffer)
         {
-            IntPtr newAddress = TryGetNewAddress(address, buffer.Length);
+            IntPtr newAddress = TryGetNewAddress(address, (uint)buffer.Length);
 
-            return base.WriteBytes(newAddress, buffer);
+            base.WriteBytes(newAddress, buffer);
         }
 
         /// <summary>
@@ -48,7 +46,9 @@ namespace System.MemoryInteractions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual T Read<T>(IntPtr address)
         {
-            byte[] bytes = ReadBytes(address, Marshal.SizeOf<T>());
+            uint size = (uint)Marshal.SizeOf<T>();
+
+            byte[] bytes = ReadBytes(address, size);
 
             return GenericsConverter.BytesToManaged<T>(bytes);
         }
@@ -61,15 +61,17 @@ namespace System.MemoryInteractions
         /// <typeparam name="T">Тип, в который нужно преобразовать массив байт</typeparam>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual T[] Read<T>(IntPtr address, int count)
+        public virtual T[] Read<T>(IntPtr address, uint count)
         {
             int size = Marshal.SizeOf<T>();
 
             T[] elements = new T[count];
 
-            for (int index = 0; index < count; index++)
+            for (uint index = 0; index < count; index++)
             {
-                elements[index] = Read<T>(address + (index * size));
+                IntPtr newAddress = (IntPtr)(address.ToInt64() + (index * size));
+
+                elements[index] = Read<T>(newAddress);
             }
 
             return elements;
@@ -83,22 +85,22 @@ namespace System.MemoryInteractions
         /// <typeparam name="T">значение, которое нужно записать</typeparam>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool Write<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
+        public virtual void Write<T>(IntPtr address, T value) => WriteBytes(address, GenericsConverter.ManagedToBytes(value));
 
-        protected virtual IntPtr TryGetNewAddress(IntPtr address, int size)
+        protected virtual IntPtr TryGetNewAddress(IntPtr address, uint size)
         {
             IntPtr newAddress = IntPtr.Add(m_SelectedModule.BaseAddress, address.ToInt32());
-            long newAddressAddSize = (newAddress + size).ToInt64();
+            long newAddressAddSize = newAddress.ToInt64() + size;
             long maxAddress = (m_SelectedModule.BaseAddress + m_SelectedModule.ModuleMemorySize).ToInt64();
 
             if (newAddress.ToInt64() < m_SelectedModule.BaseAddress.ToInt64())
             {
-                throw new OutOfMemoryException("Указанный адрес меньше адреса базового адреса модуля");
+                throw m_Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес меньше адреса базового адреса модуля");
             }
 
             if (newAddressAddSize > maxAddress)
             {
-                throw new OutOfMemoryException("Указанный адрес больше максимального адреса модуля");
+                throw m_Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес меньше адреса базового адреса модуля");
             }
 
             return newAddress;

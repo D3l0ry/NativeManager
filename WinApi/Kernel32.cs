@@ -13,38 +13,27 @@ namespace System.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true, ExactSpelling = true)]
-        public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, IntPtr dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
+        public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, AllocationType flAllocationType, MemoryProtection flProtect);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true, ExactSpelling = true)]
-        public static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, IntPtr dwSize, FreeType dwFreeType);
+        public static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, FreeType dwFreeType);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll)]
-        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, IntPtr dwSize, AllocationProtect flNewProtect, out AllocationProtect lpflOldProtect);
+        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, AllocationProtect flNewProtect, out AllocationProtect lpflOldProtect);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
-        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesRead);
-
-        [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
-        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out, MarshalAs(UnmanagedType.AsAny)] out object lpBuffer, IntPtr dwSize, IntPtr lpNumberOfBytesRead);
+        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, uint dwSize, IntPtr lpNumberOfBytesRead);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In] byte[] lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesWritten);
-
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In] IntPtr lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesWritten);
-
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
-        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In][MarshalAs(UnmanagedType.AsAny)] object lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesWritten);
+        public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [In] byte[] lpBuffer, uint nSize, IntPtr lpNumberOfBytesWritten);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll)]
-        public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, IntPtr dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, IntPtr dwCreationFlags, IntPtr lpThreadId);
+        public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, IntPtr dwCreationFlags, IntPtr lpThreadId);
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
@@ -52,7 +41,7 @@ namespace System.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll)]
-        public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, IntPtr dwLength);
+        public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
 
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
         public static extern void GetSystemInfo(ref SYSTEM_INFO Info);

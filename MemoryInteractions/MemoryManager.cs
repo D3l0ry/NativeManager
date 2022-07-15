@@ -75,7 +75,7 @@ namespace System.MemoryInteractions
             }
         }
 
-        protected override IntPtr TryGetNewAddress(IntPtr address, int size) => address;
+        protected override IntPtr TryGetNewAddress(IntPtr address, uint size) => address;
 
         /// <summary>
         /// Получает объект класса для работы с памятью текущего процесса

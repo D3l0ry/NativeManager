@@ -12,9 +12,9 @@
     <PackageIcon>logoza.ru.png</PackageIcon>
     <RepositoryUrl>https://github.com/D3l0ry/NativeManager</RepositoryUrl>
     <PackageTags>memory, nativememory</PackageTags>
-    <Version>1.5.0.5</Version>
-    <AssemblyVersion>1.5.0.5</AssemblyVersion>
-    <FileVersion>1.5.0.5</FileVersion>
+    <Version>1.5.1.10</Version>
+    <AssemblyVersion>1.5.1.10</AssemblyVersion>
+    <FileVersion>1.5.1.10</FileVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <ApplicationIcon />
     <Win32Resource />
@@ -54,8 +54,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>x86</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DocumentationFile></DocumentationFile>

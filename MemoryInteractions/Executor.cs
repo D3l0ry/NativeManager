@@ -25,7 +25,12 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public bool Execute(IntPtr address, IntPtr args)
         {
-            IntPtr thread = Kernel32.CreateRemoteThread(m_Process.Handle, IntPtr.Zero, IntPtr.Zero, address, args, IntPtr.Zero, IntPtr.Zero);
+            IntPtr thread = Kernel32.CreateRemoteThread(m_Process.Handle, IntPtr.Zero, 0, address, args, IntPtr.Zero, IntPtr.Zero);
+
+            if(thread == IntPtr.Zero)
+            {
+                throw m_Process.ShowException<OverflowException>(address, "Не удалось создать новый поток внутри процесса");
+            }
 
             Kernel32.WaitForSingleObject(thread, 0xFFFFFFFF);
             Kernel32.CloseHandle(thread);

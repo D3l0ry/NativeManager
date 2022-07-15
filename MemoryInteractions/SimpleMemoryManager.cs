@@ -9,7 +9,7 @@ namespace System.MemoryInteractions
     /// </summary>
     public class SimpleMemoryManager
     {
-        protected Process m_Process;
+        protected readonly Process m_Process;
 
         public SimpleMemoryManager(Process process)
         {
@@ -27,22 +27,19 @@ namespace System.MemoryInteractions
         /// <param name="address">Адрес с которого начать чтение</param>
         /// <param name="size">Количество считываемых байт</param>
         /// <returns></returns>
-        public virtual byte[] ReadBytes(IntPtr address, IntPtr size)
+        public virtual byte[] ReadBytes(IntPtr address, uint size)
         {
-            byte[] buffer = new byte[size.ToInt32()];
+            byte[] buffer = new byte[size];
 
-            Kernel32.ReadProcessMemory(m_Process.Handle, address, buffer, size, IntPtr.Zero);
+            bool readResult = Kernel32.ReadProcessMemory(m_Process.Handle, address, buffer, size, IntPtr.Zero);
+
+            if(readResult == false)
+            {
+                throw m_Process.ShowException<AccessViolationException>(address,$"Не удалось прочитать массив байт по адресу {address}");
+            }
 
             return buffer;
         }
-
-        /// <summary>
-        /// Читает массив байт по определенному адресу
-        /// </summary>
-        /// <param name="address">Адрес с которого начать чтение</param>
-        /// <param name="size">Колличество считываемых байт</param>
-        /// <returns></returns>
-        public virtual byte[] ReadBytes(IntPtr address, int size) => ReadBytes(address, (IntPtr)size);
 
         /// <summary>
         /// Читает массив байт по определенному адресу
@@ -77,6 +74,19 @@ namespace System.MemoryInteractions
         /// <param name="address">Адрес с которого начать запись</param>
         /// <param name="buffer">Массив байт, которые нужно записать</param>
         /// <returns></returns>
-        public virtual bool WriteBytes(IntPtr address, byte[] buffer) => Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (IntPtr)buffer.Length, IntPtr.Zero);
+        public virtual void WriteBytes(IntPtr address, byte[] buffer)
+        {
+            if(buffer is null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            bool writeResult = Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (uint)buffer.Length, IntPtr.Zero);
+
+            if (writeResult == false)
+            {
+                throw m_Process.ShowException<AccessViolationException>(address, $"Не удалось записать массив байт по адресу {address}");
+            }
+        }
     }
 }
