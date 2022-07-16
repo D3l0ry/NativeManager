@@ -27,7 +27,7 @@ namespace System.MemoryInteractions
         {
             IntPtr thread = Kernel32.CreateRemoteThread(m_Process.Handle, IntPtr.Zero, 0, address, args, IntPtr.Zero, IntPtr.Zero);
 
-            if(thread == IntPtr.Zero)
+            if (thread == IntPtr.Zero)
             {
                 throw m_Process.ShowException<OverflowException>(address, "Не удалось создать новый поток внутри процесса");
             }

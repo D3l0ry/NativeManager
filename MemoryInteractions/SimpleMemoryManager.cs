@@ -33,9 +33,9 @@ namespace System.MemoryInteractions
 
             bool readResult = Kernel32.ReadProcessMemory(m_Process.Handle, address, buffer, size, IntPtr.Zero);
 
-            if(readResult == false)
+            if (readResult == false)
             {
-                throw m_Process.ShowException<AccessViolationException>(address,$"Не удалось прочитать массив байт по адресу {address}");
+                throw m_Process.ShowException<AccessViolationException>(address, $"Не удалось прочитать массив байт по адресу {address}");
             }
 
             return buffer;
@@ -76,7 +76,7 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public virtual void WriteBytes(IntPtr address, byte[] buffer)
         {
-            if(buffer is null)
+            if (buffer is null)
             {
                 throw new ArgumentNullException(nameof(buffer));
             }

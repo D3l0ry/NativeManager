@@ -85,7 +85,7 @@ namespace System.MemoryInteractions
             bool protectResult = Kernel32
                 .VirtualProtectEx(m_Process.Handle, address, size, protectCode, out AllocationProtect oldProtect);
 
-            if(protectResult == false)
+            if (protectResult == false)
             {
                 throw m_Process.ShowException<OverflowException>(address, $"Не удалось изменить права выбранного участка памяти по адресу {address}");
             }

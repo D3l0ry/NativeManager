@@ -354,7 +354,7 @@ namespace System.Diagnostics
         /// <param name="address"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        internal static TException ShowException<TException>(this Process process,IntPtr address, string message) where TException : Exception
+        internal static TException ShowException<TException>(this Process process, IntPtr address, string message) where TException : Exception
         {
             TException exception = typeof(TException)
                 .GetConstructor(new Type[] { typeof(string) })
