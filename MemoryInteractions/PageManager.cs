@@ -25,7 +25,9 @@ namespace System.MemoryInteractions
         private static MEMORY_BASIC_INFORMATION GetPage(Process process, IntPtr address)
         {
             if (!VirtualQuery(process, address, out MEMORY_BASIC_INFORMATION pageInformation))
-                throw new Win32Exception("VirtualQuery returned zero");
+            {
+                throw process.ShowException<Win32Exception>(address, $"Не удалось получить информацию страницы по адресу: {address}");
+            }
 
             return pageInformation;
         }
@@ -70,7 +72,9 @@ namespace System.MemoryInteractions
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
-                throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
+            {
+                throw new ArgumentOutOfRangeException($"Адрес {address} находится за пределами адресной области процесса");
+            }
 
             return GetPage(m_Process, address);
         }
@@ -80,7 +84,9 @@ namespace System.MemoryInteractions
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
-                throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
+            {
+                throw new ArgumentOutOfRangeException($"Адрес {address} находится за пределами адресной области процесса");
+            }
 
             return GetPages(address, systemInfo.lpMaximumApplicationAddress);
         }
@@ -97,7 +103,9 @@ namespace System.MemoryInteractions
             SYSTEM_INFO systemInfo = GetSystemInfo();
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
-                throw new ArgumentOutOfRangeException("The address is greater than the maximum application address");
+            {
+                throw new ArgumentOutOfRangeException($"Адрес {address} находится за пределами адресной области процесса");
+            }
 
             return GetPage(process, address);
         }

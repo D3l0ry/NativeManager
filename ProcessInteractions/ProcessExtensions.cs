@@ -370,7 +370,7 @@ namespace System.Diagnostics
             exception.Data.Add("AllocationProtect", pageInformation.AllocationProtect);
             exception.Data.Add("RegionSize", pageInformation.RegionSize);
             exception.Data.Add("StateType", pageInformation.State);
-            exception.Data.Add("Protect", pageInformation.Protect);
+            exception.Data.Add("CurrentProtect", pageInformation.Protect);
             exception.Data.Add("MemoryType", pageInformation.Type);
 
             return exception;

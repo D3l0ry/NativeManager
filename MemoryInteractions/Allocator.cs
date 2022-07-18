@@ -32,7 +32,7 @@ namespace System.MemoryInteractions
 
             if (allocationAddress == IntPtr.Zero)
             {
-                throw new OverflowException("Не удалось выделить память в памяти процесса");
+                throw new OverflowException("Не удалось выделить область в памяти процесса");
             }
 
             return allocationAddress;
@@ -79,7 +79,7 @@ namespace System.MemoryInteractions
         /// <param name="address">Адрес с которого нужно изменить права</param>
         /// <param name="size">Размер блока памяти</param>
         /// <param name="protectCode">Новые права для блока памяти</param>
-        /// <returns></returns>
+        /// <returns>Старые права участка памяти</returns>
         public AllocationProtect Protect(IntPtr address, uint size, AllocationProtect protectCode)
         {
             bool protectResult = Kernel32
