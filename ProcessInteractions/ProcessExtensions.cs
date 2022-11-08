@@ -118,30 +118,14 @@ namespace System.Diagnostics
         /// </summary>
         /// <param name="process">Процесс для работы с виртуальной памятью</param>
         /// <returns></returns>
-        public static SimpleMemoryManager GetSimpleMemoryManager(this Process process)
-        {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            return new SimpleMemoryManager(process);
-        }
+        public static SimpleMemoryManager GetSimpleMemoryManager(this Process process) => new SimpleMemoryManager(process);
 
         /// <summary>
         /// Получает экземпляр класса для работы с виртуальной памятью
         /// </summary>
         /// <param name="process">Процесс для работы с виртуальной памятью</param>
         /// <returns></returns>
-        public static MemoryManager GetMemoryManager(this Process process)
-        {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            return new MemoryManager(process);
-        }
+        public static MemoryManager GetMemoryManager(this Process process) => new MemoryManager(process);
 
         /// <summary>
         /// Получает экземпляр класса для работы с виртуальной памятью выбранного модуля
@@ -151,6 +135,16 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleManager GetModuleManager(this Process process, string moduleName)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             ProcessModule selectedModule = process.GetModule(moduleName);
 
             if (selectedModule is null)
@@ -189,6 +183,11 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static PatternManager GetPatternManager(this Process process)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
             MemoryManager memoryManager = process.GetMemoryManager();
 
             return new PatternManager(process, memoryManager);
@@ -205,6 +204,11 @@ namespace System.Diagnostics
             if (process is null)
             {
                 throw new ArgumentNullException(nameof(process));
+            }
+
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
             }
 
 
@@ -233,6 +237,11 @@ namespace System.Diagnostics
                 throw new ArgumentNullException(nameof(process));
             }
 
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             ProcessModule processModule = process.Modules
                 .Cast<ProcessModule>()
                 .FirstOrDefault(currentModule => currentModule.BaseAddress == hModule);
@@ -247,6 +256,16 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleInformationCollection GetModulesAddress(this Process process)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             ProcessModuleCollection moduleCollection = process.Modules;
 
             ModuleInformation[] addresses = new ModuleInformation[moduleCollection.Count];
@@ -269,6 +288,16 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleFunctionCollection GetModuleFunctions(this Process process, string moduleName)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             if (string.IsNullOrWhiteSpace(moduleName))
             {
                 throw new ArgumentNullException(nameof(moduleName));
@@ -292,6 +321,16 @@ namespace System.Diagnostics
         /// <returns></returns>
         public static ModuleFunctionCollection GetModuleFunctions(this Process process, IntPtr hModule)
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             MemoryManager memory = process.GetMemoryManager();
 
             IMAGE_DOS_HEADER dosHeader = memory.Read<IMAGE_DOS_HEADER>(hModule);
@@ -356,6 +395,16 @@ namespace System.Diagnostics
         /// <returns></returns>
         internal static TException ShowException<TException>(this Process process, IntPtr address, string message) where TException : Exception
         {
+            if (process is null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
+
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             TException exception = typeof(TException)
                 .GetConstructor(new Type[] { typeof(string) })
                 .Invoke(new object[] { message }) as TException;

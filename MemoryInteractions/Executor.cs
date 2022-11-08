@@ -14,6 +14,11 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(process));
             }
 
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             m_Process = process;
         }
 

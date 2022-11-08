@@ -26,6 +26,11 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(memory));
             }
 
+            if (process.HasExited)
+            {
+                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
+            }
+
             m_Process = process;
             m_Memory = memory;
         }
