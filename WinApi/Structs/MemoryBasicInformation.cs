@@ -3,7 +3,7 @@
 namespace System.WinApi
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct MEMORY_BASIC_INFORMATION
+    public struct MemoryBasicInformation
     {
         public IntPtr BaseAddress;
         public IntPtr AllocationBase;

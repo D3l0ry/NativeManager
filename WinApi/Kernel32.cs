@@ -41,10 +41,10 @@ namespace System.WinApi
 
         [SuppressUnmanagedCodeSecurity]
         [DllImport(ConstLibrariesName.KernelDll)]
-        public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
+        public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MemoryBasicInformation lpBuffer, uint dwLength);
 
         [DllImport(ConstLibrariesName.KernelDll, SetLastError = true)]
-        public static extern void GetSystemInfo(ref SYSTEM_INFO Info);
+        public static extern void GetSystemInfo(ref SystemInfo Info);
 
         [DllImport(ConstLibrariesName.KernelDll, CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
