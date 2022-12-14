@@ -12,24 +12,16 @@ namespace System.MemoryInteractions
 
         public PageManager(Process process)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            if (process.HasExited)
-            {
-                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
-            }
+            ProcessExtensions.CheckProcess(process);
 
             m_Process = process;
         }
 
-        public MEMORY_BASIC_INFORMATION this[IntPtr address] => GetPageInformation(address);
+        public MemoryBasicInformation this[IntPtr address] => GetPageInformation(address);
 
-        private static MEMORY_BASIC_INFORMATION GetPage(Process process, IntPtr address)
+        private static MemoryBasicInformation GetPage(Process process, IntPtr address)
         {
-            if (!VirtualQuery(process, address, out MEMORY_BASIC_INFORMATION pageInformation))
+            if (!VirtualQuery(process, address, out MemoryBasicInformation pageInformation))
             {
                 throw process.ShowException<Win32Exception>(address, $"Не удалось получить информацию страницы по адресу: {address}");
             }
@@ -37,16 +29,16 @@ namespace System.MemoryInteractions
             return pageInformation;
         }
 
-        private MEMORY_BASIC_INFORMATION[] GetPages(IntPtr startAddress, IntPtr endAddress)
+        private MemoryBasicInformation[] GetPages(IntPtr startAddress, IntPtr endAddress)
         {
-            List<MEMORY_BASIC_INFORMATION> pages = new List<MEMORY_BASIC_INFORMATION>(5);
+            List<MemoryBasicInformation> pages = new List<MemoryBasicInformation>(5);
 
             long minAddress = startAddress.ToInt64();
             long maxAddress = endAddress.ToInt64();
 
             while (minAddress < maxAddress)
             {
-                MEMORY_BASIC_INFORMATION page = GetPage(m_Process, startAddress);
+                MemoryBasicInformation page = GetPage(m_Process, startAddress);
 
                 pages.Add(page);
 
@@ -56,25 +48,25 @@ namespace System.MemoryInteractions
             return pages.ToArray();
         }
 
-        private static SYSTEM_INFO GetSystemInfo()
+        private static SystemInfo GetSystemInfo()
         {
-            SYSTEM_INFO systemInfo = new SYSTEM_INFO();
+            SystemInfo systemInfo = new SystemInfo();
 
             Kernel32.GetSystemInfo(ref systemInfo);
 
             return systemInfo;
         }
 
-        private static bool VirtualQuery(Process process, IntPtr address, out MEMORY_BASIC_INFORMATION pageInformation)
+        private static bool VirtualQuery(Process process, IntPtr address, out MemoryBasicInformation pageInformation)
         {
-            uint memoryBasicInformationSize = (uint)Marshal.SizeOf<MEMORY_BASIC_INFORMATION>();
+            uint memoryBasicInformationSize = (uint)Marshal.SizeOf<MemoryBasicInformation>();
 
             return Kernel32.VirtualQueryEx(process.Handle, address, out pageInformation, memoryBasicInformationSize) != 0;
         }
 
-        public MEMORY_BASIC_INFORMATION GetPageInformation(IntPtr address)
+        public MemoryBasicInformation GetPageInformation(IntPtr address)
         {
-            SYSTEM_INFO systemInfo = GetSystemInfo();
+            SystemInfo systemInfo = GetSystemInfo();
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
             {
@@ -84,9 +76,9 @@ namespace System.MemoryInteractions
             return GetPage(m_Process, address);
         }
 
-        public MEMORY_BASIC_INFORMATION[] GetPagesInformation(IntPtr address)
+        public MemoryBasicInformation[] GetPagesInformation(IntPtr address)
         {
-            SYSTEM_INFO systemInfo = GetSystemInfo();
+            SystemInfo systemInfo = GetSystemInfo();
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
             {
@@ -96,16 +88,16 @@ namespace System.MemoryInteractions
             return GetPages(address, systemInfo.lpMaximumApplicationAddress);
         }
 
-        public MEMORY_BASIC_INFORMATION[] GetPagesInformation()
+        public MemoryBasicInformation[] GetPagesInformation()
         {
-            SYSTEM_INFO systemInfo = GetSystemInfo();
+            SystemInfo systemInfo = GetSystemInfo();
 
             return GetPages(systemInfo.lpMinimumApplicationAddress, systemInfo.lpMaximumApplicationAddress);
         }
 
-        public static MEMORY_BASIC_INFORMATION GetPageInformation(Process process, IntPtr address)
+        public static MemoryBasicInformation GetPageInformation(Process process, IntPtr address)
         {
-            SYSTEM_INFO systemInfo = GetSystemInfo();
+            SystemInfo systemInfo = GetSystemInfo();
 
             if (address.ToPointer() > systemInfo.lpMaximumApplicationAddress.ToPointer())
             {

@@ -13,7 +13,7 @@ namespace System.MemoryInteractions
 
         protected internal ModuleManager(Process process, ProcessModule selectedModule) : base(process)
         {
-            if (selectedModule is null)
+            if (selectedModule == null)
             {
                 throw new ArgumentNullException(nameof(selectedModule));
             }

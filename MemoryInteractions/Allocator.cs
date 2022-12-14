@@ -13,15 +13,7 @@ namespace System.MemoryInteractions
 
         public Allocator(Process process)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            if (process.HasExited)
-            {
-                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
-            }
+            ProcessExtensions.CheckProcess(process);
 
             m_Process = process;
         }
@@ -90,7 +82,7 @@ namespace System.MemoryInteractions
             bool protectResult = Kernel32
                 .VirtualProtectEx(m_Process.Handle, address, size, protectCode, out AllocationProtect oldProtect);
 
-            if (protectResult == false)
+            if (!protectResult)
             {
                 throw m_Process.ShowException<OverflowException>(address, $"Не удалось изменить права выбранного участка памяти по адресу {address}");
             }

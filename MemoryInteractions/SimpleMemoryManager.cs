@@ -13,15 +13,7 @@ namespace System.MemoryInteractions
 
         public SimpleMemoryManager(Process process)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            if (process.HasExited)
-            {
-                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
-            }
+            ProcessExtensions.CheckProcess(process);
 
             m_Process = process;
         }
@@ -35,10 +27,9 @@ namespace System.MemoryInteractions
         public virtual byte[] ReadBytes(IntPtr address, uint size)
         {
             byte[] buffer = new byte[size];
-
             bool readResult = Kernel32.ReadProcessMemory(m_Process.Handle, address, buffer, size, IntPtr.Zero);
 
-            if (readResult == false)
+            if (!readResult)
             {
                 throw m_Process.ShowException<AccessViolationException>(address, $"Не удалось прочитать массив байт по адресу {address}");
             }
@@ -81,14 +72,14 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public virtual void WriteBytes(IntPtr address, byte[] buffer)
         {
-            if (buffer is null)
+            if (buffer == null)
             {
                 throw new ArgumentNullException(nameof(buffer));
             }
 
             bool writeResult = Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (uint)buffer.Length, IntPtr.Zero);
 
-            if (writeResult == false)
+            if (!writeResult)
             {
                 throw m_Process.ShowException<AccessViolationException>(address, $"Не удалось записать массив байт по адресу {address}");
             }

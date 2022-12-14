@@ -16,19 +16,11 @@ namespace System.MemoryInteractions
 
         public PatternManager(Process process, MemoryManager memory)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
+            ProcessExtensions.CheckProcess(process);
 
-            if (memory is null)
+            if (memory == null)
             {
                 throw new ArgumentNullException(nameof(memory));
-            }
-
-            if (process.HasExited)
-            {
-                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
             }
 
             m_Process = process;
@@ -73,7 +65,7 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public IntPtr FindPattern(ProcessModule moduleInfo, byte[] pattern, int offset = 0)
         {
-            if (moduleInfo is null)
+            if (moduleInfo == null)
             {
                 throw new ArgumentNullException(nameof(moduleInfo));
             }
@@ -100,7 +92,7 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public virtual IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, byte[] pattern, int offset)
         {
-            if (pattern is null)
+            if (pattern == null)
             {
                 throw new ArgumentNullException(nameof(pattern));
             }
@@ -153,19 +145,18 @@ namespace System.MemoryInteractions
             }
 
             List<byte> patternsBytes = new List<byte>(pattern.Length);
-
             List<string> patternsStrings = pattern.Split(' ').ToList();
-            patternsStrings.RemoveAll(str => str == "");
+            patternsStrings.RemoveAll(currentString => currentString == "");
 
-            foreach (string str in patternsStrings)
+            foreach (string currentString in patternsStrings)
             {
-                if (str == "?")
+                if (currentString == "?")
                 {
                     patternsBytes.Add(0);
                 }
                 else
                 {
-                    patternsBytes.Add(Convert.ToByte(str, 16));
+                    patternsBytes.Add(Convert.ToByte(currentString, 16));
                 }
             }
 

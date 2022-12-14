@@ -24,13 +24,13 @@ namespace System.MemoryInteractions
                 ModuleManager selectedModule = m_ProcessModules.Value
                     .FirstOrDefault(currentModule => currentModule.Module.ModuleName == moduleName);
 
-                if (selectedModule is null)
+                if (selectedModule == null)
                 {
                     ProcessModule module = m_Process.GetModule(moduleName);
 
-                    if (module is null)
+                    if (module == null)
                     {
-                        throw new NullReferenceException("Модуль процесса не найден!");
+                        throw new NullReferenceException($"Модуль процесса под именем {moduleName} не найден!");
                     }
 
                     ModuleManager newModule = new ModuleManager(m_Process, module);
@@ -55,11 +55,11 @@ namespace System.MemoryInteractions
                 ModuleManager selectedModule = m_ProcessModules.Value
                     .FirstOrDefault(currentModule => currentModule.Module.BaseAddress == modulePtr);
 
-                if (selectedModule is null)
+                if (selectedModule == null)
                 {
                     ProcessModule module = m_Process.GetModule(modulePtr);
 
-                    if (module is null)
+                    if (module == null)
                     {
                         throw new NullReferenceException("Модуль процесса не найден!");
                     }

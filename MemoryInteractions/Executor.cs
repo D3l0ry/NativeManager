@@ -9,15 +9,7 @@ namespace System.MemoryInteractions
 
         public Executor(Process process)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
-            if (process.HasExited)
-            {
-                throw new ApplicationException($"Процесс {process.ProcessName} является завершенным");
-            }
+            ProcessExtensions.CheckProcess(process);
 
             m_Process = process;
         }
