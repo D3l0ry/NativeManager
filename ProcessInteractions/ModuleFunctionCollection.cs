@@ -1,14 +1,12 @@
-﻿using System.Collections;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace System.Diagnostics
 {
-    public class ModuleFunctionCollection : ReadOnlyCollectionBase
+    public class ModuleFunctionCollection : ReadOnlyCollection<ModuleInformation>
     {
-        public ModuleFunctionCollection(ModuleInformation[] moduleFunctions) => InnerList.AddRange(moduleFunctions);
+        public ModuleFunctionCollection(ModuleInformation[] moduleFunctions) : base(moduleFunctions) { }
 
-        public ModuleInformation this[int index] => InnerList[index] as ModuleInformation;
-
-        public ModuleInformation this[string name] => InnerList.Cast<ModuleInformation>().Where(X => X.Name == name).FirstOrDefault();
+        public ModuleInformation this[string name] => Items.First(X => X.Name == name);
     }
 }
