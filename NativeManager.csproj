@@ -9,24 +9,24 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Library for managing the memory of a process (Third-party process)</Description>
     <Copyright>D3l0ry</Copyright>
-    <PackageIcon>logoza.ru.png</PackageIcon>
+    <PackageIcon>logo.png</PackageIcon>
     <RepositoryUrl>https://github.com/D3l0ry/NativeManager</RepositoryUrl>
     <PackageTags>memory, nativememory</PackageTags>
-    <Version>1.5.1.10</Version>
-    <AssemblyVersion>1.5.1.10</AssemblyVersion>
-    <FileVersion>1.5.1.10</FileVersion>
+    <Version>1.5.1.25</Version>
+    <AssemblyVersion>1.5.1.25</AssemblyVersion>
+    <FileVersion>1.5.1.25</FileVersion>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <ApplicationIcon />
     <Win32Resource />
     <PackageIconUrl />
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
+    <Optimize>False</Optimize>
     <DefineConstants>TRACE</DefineConstants>
-    <DebugType>none</DebugType>
+    <DebugType>portable</DebugType>
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
@@ -35,7 +35,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>false</Optimize>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug</OutputPath>
     <DocumentationFile>bin\Debug\NativeManager.xml</DocumentationFile>
@@ -63,9 +63,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\Images\logoza.ru.png">
+    <Content Include="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="logo.png">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
