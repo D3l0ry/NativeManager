@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace System.MemoryInteractions
 {
@@ -9,10 +9,10 @@ namespace System.MemoryInteractions
     /// </summary>
     public unsafe class PatternManager
     {
-        private readonly Process m_Process;
-        private readonly MemoryManager m_Memory;
+        private readonly Process _Process;
+        private readonly MemoryManager _Memory;
 
-        public PatternManager(Process process) : this(process, process.GetMemoryManager()) { }
+        public PatternManager(Process process) : this(process, process?.GetMemoryManager()) { }
 
         public PatternManager(Process process, MemoryManager memory)
         {
@@ -23,8 +23,8 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(memory));
             }
 
-            m_Process = process;
-            m_Memory = memory;
+            _Process = process;
+            _Memory = memory;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public IntPtr FindPattern(string moduleName, byte[] pattern, int offset = 0)
         {
-            ProcessModule moduleInfo = m_Process.GetModule(moduleName);
+            ProcessModule moduleInfo = _Process.GetModule(moduleName);
 
             return FindPattern(moduleInfo, pattern, offset);
         }
@@ -105,7 +105,7 @@ namespace System.MemoryInteractions
 
                 for (int MIndex = 0; MIndex < pattern.Length; MIndex++)
                 {
-                    Found = pattern[MIndex] == 0 || m_Memory.Read<byte>((IntPtr)(pIndex + MIndex)) == pattern[MIndex];
+                    Found = pattern[MIndex] == 0 || _Memory.Read<byte>((IntPtr)(pIndex + MIndex)) == pattern[MIndex];
 
                     if (!Found)
                     {
@@ -133,7 +133,7 @@ namespace System.MemoryInteractions
         public IntPtr FindPattern(IntPtr startAddress, IntPtr endAddress, string pattern, int offset) => FindPattern(startAddress, endAddress, GetPattern(pattern), offset);
 
         /// <summary>
-        /// Получает массив байт из текстового паттерна
+        /// Получает массив байт из текстового паттерна (Пример: FF 91 01 ?? F5)
         /// </summary>
         /// <param name="pattern">Паттерн, который нужно преобразовать в массив байт</param>
         /// <returns></returns>
@@ -144,20 +144,24 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(pattern));
             }
 
-            List<byte> patternsBytes = new List<byte>(pattern.Length);
-            List<string> patternsStrings = pattern.Split(' ').ToList();
-            patternsStrings.RemoveAll(currentString => currentString == "");
+            Regex regex = new Regex(@"[a-fA-F0-9]{2}|[?]{2}");
+            MatchCollection matches = regex.Matches(pattern);
+            List<byte> patternsBytes = new List<byte>(matches.Count);
 
-            foreach (string currentString in patternsStrings)
+            foreach (Match currentMatch in matches)
             {
-                if (currentString == "?")
+                string matchValue = currentMatch.Value;
+
+                if (matchValue == "??")
                 {
                     patternsBytes.Add(0);
+
+                    continue;
                 }
-                else
-                {
-                    patternsBytes.Add(Convert.ToByte(currentString, 16));
-                }
+
+                byte matchValueToByte = Convert.ToByte(matchValue, 16);
+
+                patternsBytes.Add(matchValueToByte);
             }
 
             return patternsBytes.ToArray();
