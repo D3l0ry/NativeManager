@@ -9,13 +9,13 @@ namespace System.MemoryInteractions
     /// </summary>
     public class SimpleMemoryManager
     {
-        protected readonly Process m_Process;
+        protected readonly Process _Process;
 
         public SimpleMemoryManager(Process process)
         {
             ProcessExtensions.CheckProcess(process);
 
-            m_Process = process;
+            _Process = process;
         }
 
         /// <summary>
@@ -27,11 +27,11 @@ namespace System.MemoryInteractions
         public virtual byte[] ReadBytes(IntPtr address, uint size)
         {
             byte[] buffer = new byte[size];
-            bool readResult = Kernel32.ReadProcessMemory(m_Process.Handle, address, buffer, size, IntPtr.Zero);
+            bool readResult = Kernel32.ReadProcessMemory(_Process.Handle, address, buffer, size, IntPtr.Zero);
 
             if (!readResult)
             {
-                throw m_Process.ShowException<AccessViolationException>(address, $"Не удалось прочитать массив байт по адресу {address}");
+                throw _Process.ShowException<AccessViolationException>(address, $"Не удалось прочитать массив байт по адресу {address}");
             }
 
             return buffer;
@@ -77,12 +77,14 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(buffer));
             }
 
-            bool writeResult = Kernel32.WriteProcessMemory(m_Process.Handle, address, buffer, (uint)buffer.Length, IntPtr.Zero);
+            bool writeResult = Kernel32.WriteProcessMemory(_Process.Handle, address, buffer, (uint)buffer.Length, IntPtr.Zero);
 
-            if (!writeResult)
+            if (writeResult)
             {
-                throw m_Process.ShowException<AccessViolationException>(address, $"Не удалось записать массив байт по адресу {address}");
+                return;
             }
+
+            throw _Process.ShowException<AccessViolationException>(address, $"Не удалось записать массив байт по адресу {address}");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace System.MemoryInteractions
     /// </summary>
     public unsafe class ModuleManager : SimpleMemoryManager
     {
-        private readonly ProcessModule m_SelectedModule;
+        private readonly ProcessModule _SelectedModule;
 
         protected internal ModuleManager(Process process, ProcessModule selectedModule) : base(process)
         {
@@ -18,10 +18,10 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(selectedModule));
             }
 
-            m_SelectedModule = selectedModule;
+            _SelectedModule = selectedModule;
         }
 
-        public ProcessModule Module => m_SelectedModule;
+        public ProcessModule Module => _SelectedModule;
 
         public override byte[] ReadBytes(IntPtr address, uint size)
         {
@@ -47,7 +47,6 @@ namespace System.MemoryInteractions
         public virtual T Read<T>(IntPtr address)
         {
             uint size = (uint)Marshal.SizeOf<T>();
-
             byte[] bytes = ReadBytes(address, size);
 
             return GenericsConverter.BytesToManaged<T>(bytes);
@@ -64,7 +63,6 @@ namespace System.MemoryInteractions
         public virtual T[] Read<T>(IntPtr address, uint count)
         {
             int size = Marshal.SizeOf<T>();
-
             T[] elements = new T[count];
 
             for (uint index = 0; index < count; index++)
@@ -89,18 +87,18 @@ namespace System.MemoryInteractions
 
         protected virtual IntPtr TryGetNewAddress(IntPtr address, uint size)
         {
-            IntPtr newAddress = IntPtr.Add(m_SelectedModule.BaseAddress, address.ToInt32());
+            IntPtr newAddress = IntPtr.Add(_SelectedModule.BaseAddress, address.ToInt32());
             long newAddressAddSize = newAddress.ToInt64() + size;
-            long maxAddress = (m_SelectedModule.BaseAddress + m_SelectedModule.ModuleMemorySize).ToInt64();
+            long maxAddress = (_SelectedModule.BaseAddress + _SelectedModule.ModuleMemorySize).ToInt64();
 
-            if (newAddress.ToInt64() < m_SelectedModule.BaseAddress.ToInt64())
+            if (newAddress.ToInt64() < _SelectedModule.BaseAddress.ToInt64())
             {
-                throw m_Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес меньше адреса базового адреса модуля");
+                throw _Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес меньше базового адреса модуля");
             }
 
             if (newAddressAddSize > maxAddress)
             {
-                throw m_Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес меньше адреса базового адреса модуля");
+                throw _Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес больше базового адреса модуля");
             }
 
             return newAddress;

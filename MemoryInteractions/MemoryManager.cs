@@ -9,9 +9,9 @@ namespace System.MemoryInteractions
     /// </summary>
     public sealed unsafe class MemoryManager : ModuleManager
     {
-        private readonly Lazy<List<ModuleManager>> m_ProcessModules;
+        private readonly Lazy<List<ModuleManager>> _ProcessModules;
 
-        public MemoryManager(Process process) : base(process, process.MainModule) => m_ProcessModules = new Lazy<List<ModuleManager>>();
+        public MemoryManager(Process process) : base(process, process.MainModule) => _ProcessModules = new Lazy<List<ModuleManager>>();
 
         /// <summary>
         /// Получает объект класса ModuleManager для работы с адресами выбранного модуля
@@ -21,23 +21,23 @@ namespace System.MemoryInteractions
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Value
+                ModuleManager selectedModule = _ProcessModules.Value
                     .FirstOrDefault(currentModule => currentModule.Module.ModuleName == moduleName);
 
                 if (selectedModule == null)
                 {
-                    ProcessModule module = m_Process.GetModule(moduleName);
+                    ProcessModule module = _Process.GetModule(moduleName);
 
                     if (module == null)
                     {
                         throw new NullReferenceException($"Модуль процесса под именем {moduleName} не найден!");
                     }
 
-                    ModuleManager newModule = new ModuleManager(m_Process, module);
+                    ModuleManager newModule = new ModuleManager(_Process, module);
 
-                    m_ProcessModules.Value.Add(newModule);
+                    _ProcessModules.Value.Add(newModule);
 
-                    return m_ProcessModules.Value.Last();
+                    return newModule;
                 }
 
                 return selectedModule;
@@ -52,23 +52,23 @@ namespace System.MemoryInteractions
         {
             get
             {
-                ModuleManager selectedModule = m_ProcessModules.Value
+                ModuleManager selectedModule = _ProcessModules.Value
                     .FirstOrDefault(currentModule => currentModule.Module.BaseAddress == modulePtr);
 
                 if (selectedModule == null)
                 {
-                    ProcessModule module = m_Process.GetModule(modulePtr);
+                    ProcessModule module = _Process.GetModule(modulePtr);
 
                     if (module == null)
                     {
                         throw new NullReferenceException("Модуль процесса не найден!");
                     }
 
-                    ModuleManager newModule = new ModuleManager(m_Process, module);
+                    ModuleManager newModule = new ModuleManager(_Process, module);
 
-                    m_ProcessModules.Value.Add(newModule);
+                    _ProcessModules.Value.Add(newModule);
 
-                    return m_ProcessModules.Value.Last();
+                    return newModule;
                 }
 
                 return selectedModule;

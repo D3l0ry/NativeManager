@@ -8,13 +8,13 @@ namespace System.MemoryInteractions
 {
     public unsafe class PageManager
     {
-        private readonly Process m_Process;
+        private readonly Process _Process;
 
         public PageManager(Process process)
         {
             ProcessExtensions.CheckProcess(process);
 
-            m_Process = process;
+            _Process = process;
         }
 
         public MemoryBasicInformation this[IntPtr address] => GetPageInformation(address);
@@ -38,7 +38,7 @@ namespace System.MemoryInteractions
 
             while (minAddress < maxAddress)
             {
-                MemoryBasicInformation page = GetPage(m_Process, startAddress);
+                MemoryBasicInformation page = GetPage(_Process, startAddress);
 
                 pages.Add(page);
 
@@ -73,7 +73,7 @@ namespace System.MemoryInteractions
                 throw new ArgumentOutOfRangeException($"Адрес {address} находится за пределами адресной области процесса");
             }
 
-            return GetPage(m_Process, address);
+            return GetPage(_Process, address);
         }
 
         public MemoryBasicInformation[] GetPagesInformation(IntPtr address)

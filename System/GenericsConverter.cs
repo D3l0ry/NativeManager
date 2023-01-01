@@ -42,14 +42,16 @@ namespace System
         /// <returns></returns>
         public static T BytesToStructure<T>(byte[] bytes) where T : unmanaged
         {
-            if (bytes is null)
+            if (bytes == null)
             {
                 throw new ArgumentNullException(nameof(bytes));
             }
 
-            if (bytes.Length < Marshal.SizeOf<T>())
+            int size = Marshal.SizeOf<T>();
+
+            if (bytes.Length < size)
             {
-                throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
+                throw new ArgumentOutOfRangeException(nameof(bytes), "Размер массива меньше размера структуры");
             }
 
             fixed (byte* arrayPtr = bytes)
@@ -98,7 +100,7 @@ namespace System
         /// <returns></returns>
         public static T BytesToManaged<T>(byte[] bytes)
         {
-            if (bytes is null)
+            if (bytes == null)
             {
                 throw new ArgumentNullException(nameof(bytes));
             }
@@ -107,7 +109,7 @@ namespace System
 
             if (bytes.Length < size)
             {
-                throw new ArgumentOutOfRangeException(nameof(bytes), "bytes length smaller than the size of the structure");
+                throw new ArgumentOutOfRangeException(nameof(bytes), "Размер массива меньше размера объекта");
             }
 
             fixed (byte* bytePtr = bytes)
