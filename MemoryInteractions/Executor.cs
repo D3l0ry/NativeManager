@@ -5,13 +5,13 @@ namespace System.MemoryInteractions
 {
     public sealed unsafe class Executor
     {
-        private readonly Process m_Process;
+        private readonly Process _Process;
 
         public Executor(Process process)
         {
             ProcessExtensions.CheckProcess(process);
 
-            m_Process = process;
+            _Process = process;
         }
 
         /// <summary>
@@ -19,20 +19,30 @@ namespace System.MemoryInteractions
         /// </summary>
         /// <param name="address">Адрес функции</param>
         /// <param name="args">Аргументы функции</param>
-        /// <returns></returns>
-        public bool Execute(IntPtr address, IntPtr args)
+        public void Execute(IntPtr address, IntPtr args)
         {
-            IntPtr thread = Kernel32.CreateRemoteThread(m_Process.Handle, IntPtr.Zero, 0, address, args, IntPtr.Zero, IntPtr.Zero);
+            IntPtr thread = Kernel32.CreateRemoteThread(_Process.Handle, IntPtr.Zero, 0, address, args, IntPtr.Zero, IntPtr.Zero);
 
             if (thread == IntPtr.Zero)
             {
-                throw m_Process.ShowException<OverflowException>(address, "Не удалось создать новый поток внутри процесса");
+                throw _Process.ShowException<OverflowException>(address, "Не удалось создать новый поток внутри процесса");
             }
 
             Kernel32.WaitForSingleObject(thread, 0xFFFFFFFF);
             Kernel32.CloseHandle(thread);
+        }
 
-            return thread != IntPtr.Zero;
+        /// <summary>
+        /// Вызывает функцию по имени
+        /// </summary>
+        /// <param name="moduleName">Имя библиотеки (модуля)</param>
+        /// <param name="functionName">Имя функции</param>
+        /// <param name="args">Аргументы функции</param>
+        public void Execute(string moduleName, string functionName, IntPtr args)
+        {
+            IntPtr functionPtr = GetFunction(moduleName, functionName);
+
+            Execute(functionPtr, args);
         }
 
         /// <summary>
