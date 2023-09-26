@@ -5,13 +5,13 @@ namespace System.MemoryInteractions
 {
     public sealed unsafe class Executor
     {
-        private readonly Process _Process;
+        private readonly Process _process;
 
         public Executor(Process process)
         {
             ProcessExtensions.CheckProcess(process);
 
-            _Process = process;
+            _process = process;
         }
 
         /// <summary>
@@ -21,11 +21,11 @@ namespace System.MemoryInteractions
         /// <param name="args">Аргументы функции</param>
         public void Execute(IntPtr address, IntPtr args)
         {
-            IntPtr thread = Kernel32.CreateRemoteThread(_Process.Handle, IntPtr.Zero, 0, address, args, IntPtr.Zero, IntPtr.Zero);
+            IntPtr thread = Kernel32.CreateRemoteThread(_process.Handle, IntPtr.Zero, 0, address, args, IntPtr.Zero, IntPtr.Zero);
 
             if (thread == IntPtr.Zero)
             {
-                throw _Process.ShowException<OverflowException>(address, "Не удалось создать новый поток внутри процесса");
+                throw _process.ShowException<OverflowException>(address, "Не удалось создать новый поток внутри процесса");
             }
 
             Kernel32.WaitForSingleObject(thread, 0xFFFFFFFF);

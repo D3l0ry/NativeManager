@@ -9,7 +9,7 @@ namespace System.MemoryInteractions
     /// </summary>
     public unsafe class ModuleManager : SimpleMemoryManager
     {
-        private readonly ProcessModule _SelectedModule;
+        private readonly ProcessModule _selectedModule;
 
         protected internal ModuleManager(Process process, ProcessModule selectedModule) : base(process)
         {
@@ -18,10 +18,10 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(selectedModule));
             }
 
-            _SelectedModule = selectedModule;
+            _selectedModule = selectedModule;
         }
 
-        public ProcessModule Module => _SelectedModule;
+        public ProcessModule Module => _selectedModule;
 
         public override byte[] ReadBytes(IntPtr address, uint size)
         {
@@ -87,11 +87,11 @@ namespace System.MemoryInteractions
 
         protected virtual IntPtr TryGetNewAddress(IntPtr address, uint size)
         {
-            IntPtr newAddress = IntPtr.Add(_SelectedModule.BaseAddress, address.ToInt32());
+            IntPtr newAddress = IntPtr.Add(_selectedModule.BaseAddress, address.ToInt32());
             long newAddressAddSize = newAddress.ToInt64() + size;
-            long maxAddress = (_SelectedModule.BaseAddress + _SelectedModule.ModuleMemorySize).ToInt64();
+            long maxAddress = (_selectedModule.BaseAddress + _selectedModule.ModuleMemorySize).ToInt64();
 
-            if (newAddress.ToInt64() < _SelectedModule.BaseAddress.ToInt64())
+            if (newAddress.ToInt64() < _selectedModule.BaseAddress.ToInt64())
             {
                 throw _Process.ShowException<OutOfMemoryException>(newAddress, "Указанный адрес меньше базового адреса модуля");
             }

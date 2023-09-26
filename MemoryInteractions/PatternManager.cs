@@ -9,8 +9,8 @@ namespace System.MemoryInteractions
     /// </summary>
     public unsafe class PatternManager
     {
-        private readonly Process _Process;
-        private readonly MemoryManager _Memory;
+        private readonly Process _process;
+        private readonly MemoryManager _memory;
 
         public PatternManager(Process process) : this(process, process?.GetMemoryManager()) { }
 
@@ -23,8 +23,8 @@ namespace System.MemoryInteractions
                 throw new ArgumentNullException(nameof(memory));
             }
 
-            _Process = process;
-            _Memory = memory;
+            _process = process;
+            _memory = memory;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace System.MemoryInteractions
         /// <returns></returns>
         public IntPtr FindPattern(string moduleName, byte[] pattern, int offset = 0)
         {
-            ProcessModule moduleInfo = _Process.GetModule(moduleName);
+            ProcessModule moduleInfo = _process.GetModule(moduleName);
 
             return FindPattern(moduleInfo, pattern, offset);
         }
@@ -105,7 +105,7 @@ namespace System.MemoryInteractions
 
                 for (int MIndex = 0; MIndex < pattern.Length; MIndex++)
                 {
-                    Found = pattern[MIndex] == 0 || _Memory.Read<byte>((IntPtr)(pIndex + MIndex)) == pattern[MIndex];
+                    Found = pattern[MIndex] == 0 || _memory.Read<byte>((IntPtr)(pIndex + MIndex)) == pattern[MIndex];
 
                     if (!Found)
                     {

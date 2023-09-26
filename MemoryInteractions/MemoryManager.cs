@@ -9,9 +9,9 @@ namespace System.MemoryInteractions
     /// </summary>
     public sealed unsafe class MemoryManager : ModuleManager
     {
-        private readonly Lazy<List<ModuleManager>> _ProcessModules;
+        private readonly Lazy<List<ModuleManager>> _processModules;
 
-        public MemoryManager(Process process) : base(process, process.MainModule) => _ProcessModules = new Lazy<List<ModuleManager>>();
+        public MemoryManager(Process process) : base(process, process.MainModule) => _processModules = new Lazy<List<ModuleManager>>();
 
         /// <summary>
         /// Получает объект класса ModuleManager для работы с адресами выбранного модуля
@@ -21,7 +21,7 @@ namespace System.MemoryInteractions
         {
             get
             {
-                ModuleManager selectedModule = _ProcessModules.Value
+                ModuleManager selectedModule = _processModules.Value
                     .FirstOrDefault(currentModule => currentModule.Module.ModuleName == moduleName);
 
                 if (selectedModule == null)
@@ -35,7 +35,7 @@ namespace System.MemoryInteractions
 
                     ModuleManager newModule = new ModuleManager(_Process, module);
 
-                    _ProcessModules.Value.Add(newModule);
+                    _processModules.Value.Add(newModule);
 
                     return newModule;
                 }
@@ -52,7 +52,7 @@ namespace System.MemoryInteractions
         {
             get
             {
-                ModuleManager selectedModule = _ProcessModules.Value
+                ModuleManager selectedModule = _processModules.Value
                     .FirstOrDefault(currentModule => currentModule.Module.BaseAddress == modulePtr);
 
                 if (selectedModule == null)
@@ -66,7 +66,7 @@ namespace System.MemoryInteractions
 
                     ModuleManager newModule = new ModuleManager(_Process, module);
 
-                    _ProcessModules.Value.Add(newModule);
+                    _processModules.Value.Add(newModule);
 
                     return newModule;
                 }
